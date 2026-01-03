@@ -1,3 +1,4 @@
 from django.contrib import admin
+from sso.models import CharacterEve
 
-# Register your models here.
+admin.site.register(CharacterEve)

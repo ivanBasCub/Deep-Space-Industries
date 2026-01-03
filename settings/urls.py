@@ -22,6 +22,7 @@ import sso.views as sso_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', web_views.index, name='index'),
+    path('dashboard/', web_views.dashboard, name='dashboard'),
     
     path('sso/login/', sso_views.eve_login, name='eve_login'),
     path('sso/callback/', sso_views.eve_callback, name='eve_callback')
