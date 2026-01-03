@@ -127,11 +127,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # EVE SSO AND ESI SETTINGS
-CLIENT_ID = os.getenv('EVE_CLIENT_ID')
-CLIENT_SECRET = os.getenv('EVE_CLIENT_SECRET')
-CALLBACK_URL = os.getenv('CALLBACK_URL')
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 CALLBACK_URL = os.getenv('CALLBACK_URL')
 EVE_SSO_SCOPE = os.getenv('EVE_SSO_SCOPE')
 EVE_REFRESH_TOKEN = os.getenv('EVE_REFRESH_TOKEN')

@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/bootstrap/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css'%}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <title>Deep Space Industries</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-transparent fixed-top">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                </a>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <div class="modal fade" id="banModal" tabindex="-1" aria-labelledby="banModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Error</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% for message in messages %} <p>{{ message }}</p> {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="title-container">
+            <h1 class="title">Deep Space Industries</h1>
+            <p class="desc">Welcome to Deep Space Industries</p>
+            <a href="/sso/login">
+                <img src="{% static 'img/eve-sso-login-black-large.png' %}" class="link">
+            </a>
+        </div>
+    </main>
+</body>
+{% if messages %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = new bootstrap.Modal(document.querySelector('.modal'));
+    modal.show();
+  });
+  if (window.location.search.includes('code=') || window.location.search.includes('state=')) {
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+</script>
+{% endif %}
+</html>
