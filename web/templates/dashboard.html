@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <title>Dashboard - Deep Space Industries</title>
+{% endblock %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="row">
+        <div class="col-12 col-xl-8 mb-3" id="character-panel">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="ms-auto me-auto mb-3">Personajes</h4>
+                        <div>
+                            <div class="height:300px; overflow-y:auto;">
+                                <div class="d-flex">
+                                    <a href="/sso/login/" class="btn btn-primary flex-fill m-1"
+                                        title="Agregar Personaje">
+                                        <span class="d-md-inline m-2">Agregar Personaje</span>
+                                    </a>
+                                    <a href="/auth/characters/main/" class="btn btn-primary flex-fill m-1"
+                                        title="Cambiar Personaje Principal">
+                                        <span class="d-md-inline m-2">Cambiar Personaje Principal</span>
+                                    </a>
+                                </div>
+                                <table class="table text-light">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center"></th>
+                                            <th class="text-center">Nombre</th>
+                                            <th class="text-center">Corporación</th>
+                                            <th class="text-center">Alianza</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pj in list_characters %}
+                                        <tr>
+                                            <td class="text-center">
+                                                 <img class="rounded-circle"
+                                                    src="https://images.evetech.net/characters/{{pj.character_id}}/portrait?size=32">
+                                            </td>
+                                            <td class="text-center">{{pj.character_name}}</td>
+                                            <td class="text-center">{{pj.corp_name}}</td>
+                                            <td class="text-center">{{pj.alliance_name}}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4 mb-3" id="role-panel">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h4 class="ms-auto me-auto mb-3">Membership</h4>
+                    </div>
+                    <div>
+                        <div class="height:300px; overflow-y:auto;">
+                            <h5 class="text-center">Estado: 
+                                {% if user|has_group:'Industry' %}
+                                    Miembro
+                                {% else %}
+                                    Invitado
+                                {% endif %}
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

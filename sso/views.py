@@ -3,8 +3,9 @@ from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from sso.models import CharacterEve
+import esi.views as esi_views
 
 from base64 import b64encode
 from datetime import timedelta
@@ -66,37 +67,44 @@ def check_account(request, token, user_info):
         return update_create_account(request, token, user_info)
 
 # Function to register a new EVE Online account in an existing user session
+# TODO: Implementar las funciones de registro de nuevas cuentas EVE Online
 def register_eve_account(request, token, user_info):
     check = CharacterEve.objects.filter(character_id=user_info['CharacterID'])
     if check.exists():
-        return redirect('dashboard')
+        refresh_eve_character(request.user, user_info, token)
     else:
-        return redirect('dashboard')
+        save_eve_character(request.user, user_info, token)
+    
+    return redirect('dashboard')
 
 # Function to refresh an existing EVE Online character's tokens and information
 def refresh_eve_character(user, character, token):
     expiration = timezone.now() + timedelta(minutes=20)
+
+    # character es un dict del SSO
     char = CharacterEve.objects.get(character_id=character['CharacterID'])
+
     char.access_token = token['access_token']
     char.refresh_token = token['refresh_token']
     char.expiration = expiration
-    
-    if char.deleted:
-        char.deleted = False
-        
-    if char.character_name == character['CharacterName'].replace(' ', '_'):
+
+    # Estas funciones sí necesitan request, así que lo pasamos desde fuera
+    char = esi_views.corp_alliance_info(char)
+    char = esi_views.wallet_info(char)
+
+    if user.username == character['CharacterName'].replace(' ', '_'):
         char.main_character = True
-    
+
     char.save()
 
 
 # Function to save a new EVE Online character to the database
 def save_eve_character(user, character, token):
     expiration = timezone.now() + timedelta(minutes=20)
-    
+
     char = CharacterEve(
         character_id = character['CharacterID'],
-        character_name = character['CharacterName'],
+        character_name = character['CharacterName'].replace(' ', '_'),
         main_character = False,
         access_token = token['access_token'],
         refresh_token = token['refresh_token'],
@@ -104,10 +112,12 @@ def save_eve_character(user, character, token):
         user = user,
         deleted = False
     )
-    
+
+    char = esi_views.corp_alliance_info(char)
+    char = esi_views.wallet_info(char)
+
     char.save()
     
-
 # Function to update an existing EVE Online account or create a new one for unauthenticated users
 def update_create_account(request, token, user_info):
     vault = string.ascii_letters + string.digits + string.punctuation
@@ -117,7 +127,7 @@ def update_create_account(request, token, user_info):
         user = User.objects.get(username=user_info['CharacterName'].replace(' ', '_'))
         user.set_password(password)
         user.save()
-        refresh_eve_character(user, user_info, token)
+        refresh_eve_character(request.user, user_info, token)
         login(request, user)
         
     except User.DoesNotExist:
@@ -127,10 +137,15 @@ def update_create_account(request, token, user_info):
         user.save()
         
         if check.exists():
-            refresh_eve_character(user, user_info, token)
+            refresh_eve_character(request.user,user_info, token)
             return redirect('dashboard')
         
         save_eve_character(user, user_info, token)
         login(request, user)
 
     return redirect('dashboard')
+
+# Function to Logout user
+def eve_logout(request):
+    logout(request)
+    return redirect("/")

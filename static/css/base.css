@@ -1,0 +1,34 @@
+body{
+    color: white;
+    background-color: #222;
+}
+.navbar{
+    background-color: #375a7f;
+    padding: 1em 0;
+}
+.nav-padding{
+    margin-top: 4.5em !important;
+    max-height: calc(100vh - 4.5em) !important;
+    background-color: #444;
+}
+.av-link{
+    text-decoration: none;
+    color: white;
+}
+.av-link:hover{
+    text-decoration: none;
+    color: #ddd;
+}
+.col{
+    background-color: #222;
+}
+#sidebar{
+    width: 325px;
+    height: calc(100vh - 4.5em);
+    transition: all 0.3s ease-in-out;
+}
+#sidebar.collapsing {
+    height: 100vh;
+    transform: translateX(-325px);
+}
+
