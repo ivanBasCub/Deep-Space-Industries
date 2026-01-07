@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'web',
     'sso',
-    'esi'
+    'esi',
+    'buyback'
 ]
 
 MIDDLEWARE = [

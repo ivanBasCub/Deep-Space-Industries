@@ -1,7 +1,5 @@
-from django.shortcuts import redirect
-from django.contrib import messages
 from django.conf import settings
-
+from sso.models import CharacterEve
 import requests
 
 # Function to get corporation and alliance info for a character
@@ -57,3 +55,36 @@ def wallet_info(character):
     character.wallet_money = data_wallet
     
     return character
+
+# Function obtain EvE Item Data
+def item_data(item_id):
+    headers_2 = {
+        "Accept-Language": "",
+        "If-None-Match": "",
+        "X-Compatibility-Date": "2020-01-01",
+        "X-Tenant": "",
+        "Accept": "application/json"
+    }
+
+    response = requests.get(f"{settings.EVE_ESI_URL}/universe/types/{item_id}", headers = headers_2)
+    return response.json()
+
+# Function obtain structures data
+def structure_data(character, structure_id):
+  
+    headers = {
+        "Accept-Language": "",
+        "If-None-Match": "",
+        "X-Compatibility-Date": "2025-12-16",
+        "X-Tenant": "",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {character.access_token}"
+    }
+    print(character.access_token)
+    
+    response = requests.get(
+        f"{settings.EVE_ESI_URL}/universe/structures/{structure_id}",
+        headers=headers
+    )
+    print(response.status_code)
+    return response.json()

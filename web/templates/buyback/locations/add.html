@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+    <title>Add Location - Deep Space Industries</title>
+{% endblock %}
+
+{% block title %}
+    Locations
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav sub-nav">
+    <li class="nav-item sub-item">
+        <a href="" class="btn btn-primary">Setup Manager</a>
+    </li>
+    <li class="nav-item sub-item">
+        <a href="/locations/" class="btn btn-primary">Locations</a>
+    </li>
+    <li class="nav-item sub-item">
+        <a href="" class="btn btn-primary">Programs</a>
+    </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+    <div class="my-3 d-flex justify-content-center">
+        <div class="card col-6">
+            <div class="card-header">
+                Add Locations
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <small class="form-text text-muted"> Para poder sacar el ID de la estación tienes que copiar el mensaje de la estación (&lt;url=showinfo:35833//1044752365771&gt;Perimeter - 0.0% Neutral States Market HQ&lt;/url&gt;) y copiar el segundo ID que te sale en el URL</small>
+                        <br>
+                        <label for="station_id">Station ID</label>
+                        <input class="form-control" type="text" name="station_id" id="station_id" placeholder="1044752365771">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

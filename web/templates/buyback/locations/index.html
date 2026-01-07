@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+    <title>Locations - Deep Space Industries</title>
+{% endblock %}
+
+{% block title %}
+    Locations
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav sub-nav">
+    <li class="nav-item sub-item">
+        <a href="" class="btn btn-primary">Setup Manager</a>
+    </li>
+    <li class="nav-item sub-item">
+        <a href="/locations/" class="btn btn-primary">Locations</a>
+    </li>
+    <li class="nav-item sub-item">
+        <a href="" class="btn btn-primary">Programs</a>
+    </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+    <div class="my-3 d-flex justify-content-center">
+        <div class="card col-6">
+            <div class="card-header">
+                Configure Locations
+                <div class="float-end">
+                    <a href="/locations/add/" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                    </a>
+                </div>
+            </div>
+            <table style="width: 100%; margin: auto;" class="table table-striped table-hover no-footer w-100">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for location in locations %}
+                    <tr>
+                        <td>{{location.station_name}}</td>
+                        <td class="text-center">
+                        {% if location.station_name != "Anywhere" %}
+                            <a href="/locations/{{location.station_id}}/del/" class="btn-sm btn btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

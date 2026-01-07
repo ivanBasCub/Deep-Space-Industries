@@ -9,7 +9,7 @@ body{
 .nav-padding{
     margin-top: 4.5em !important;
     max-height: calc(100vh - 4.5em) !important;
-    background-color: #444;
+    background-color: #333;
 }
 .av-link{
     text-decoration: none;

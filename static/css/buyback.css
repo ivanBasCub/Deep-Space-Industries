@@ -1,0 +1,36 @@
+.card{
+    background-color: #444;
+}
+.table{
+    background-color: #333;
+    color: white;
+    border-color: #444;
+}
+th{
+    padding: 0.5em;
+}
+td{
+    padding: 0.5em;
+    color: white;
+}
+.btn{
+    color: white;
+}
+.btn-warning{
+    background-color: goldenrod;
+    border-color: goldenrod;
+}
+.btn-warning:hover{
+    background-color: rgb(180, 137, 27);
+    border-color: rgb(180, 137, 27);
+    color: white;
+}
+.sub-nav{
+    margin-left: auto;
+}
+.sub-item{
+    margin: 0 0.5em;
+}
+.card-body{
+    background-color: #333;
+}

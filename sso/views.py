@@ -97,14 +97,13 @@ def refresh_eve_character(user, character, token):
 
     char.save()
 
-
 # Function to save a new EVE Online character to the database
 def save_eve_character(user, character, token):
     expiration = timezone.now() + timedelta(minutes=20)
 
     char = CharacterEve(
         character_id = character['CharacterID'],
-        character_name = character['CharacterName'].replace(' ', '_'),
+        character_name = character['CharacterName'],
         main_character = False,
         access_token = token['access_token'],
         refresh_token = token['refresh_token'],
@@ -113,6 +112,9 @@ def save_eve_character(user, character, token):
         deleted = False
     )
 
+    if user.username == character['CharacterName'].replace(' ', '_'):
+        char.main_character = True
+        
     char = esi_views.corp_alliance_info(char)
     char = esi_views.wallet_info(char)
 

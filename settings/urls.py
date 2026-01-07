@@ -27,4 +27,10 @@ urlpatterns = [
     path('sso/login/', sso_views.eve_login, name='eve_login'),
     path('sso/callback/', sso_views.eve_callback, name='eve_callback'),
     path('sso/logout/', sso_views.eve_logout, name='logout'),
+    # Buyback program
+    path('buybackprogram/', web_views.buyback_program, name="index_buybackprogram"),
+    # Locations
+    path('locations/', web_views.locations, name="locations_index"),
+    path('locations/add/', web_views.add_location, name="add_location"),
+    path('locations/<int:structure_id>/del/', web_views.del_location, name="del_location")
 ]
