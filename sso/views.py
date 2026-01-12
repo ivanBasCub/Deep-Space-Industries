@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from sso.models import CharacterEve
+from buyback.models import Manager
 import esi.views as esi_views
 
 from base64 import b64encode
@@ -16,23 +17,33 @@ import urllib.parse
 import requests
 
 # Function to initiate EVE Online SSO login
-def eve_login(request):
-    state = ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
+def eve_login(request, scope, login_type):
+    state = f"{login_type}_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
     print(settings.CLIENT_ID)
     params = {
         'response_type': 'code',
         'client_id': settings.CLIENT_ID,
         'redirect_uri': settings.CALLBACK_URL,
-        'scope': settings.EVE_SSO_SCOPE,
+        'scope': scope,
         'state': state
     }
     
     url = 'https://login.eveonline.com/v2/oauth/authorize?' + urllib.parse.urlencode(params)
     return redirect(url)
 
+def eve_login_user(request):
+    scope = "publicData"
+    return eve_login(request, scope, "user")
+
+def eve_login_manager(request):
+    scope = settings.EVE_SSO_SCOPE
+    return eve_login(request, scope, "manager")
+
 # Callback function to handle EVE Online SSO response
 def eve_callback(request):
     code = request.GET.get('code')
+    state = request.GET.get('state')
+    login_type = state.split("_")[0]
     
     headers = {
         'Authorization' : f'Basic {b64encode(f"{settings.CLIENT_ID}:{settings.CLIENT_SECRET}".encode()).decode()}',
@@ -56,8 +67,11 @@ def eve_callback(request):
         messages.error(request, "Failed to verify EVE Online user.")
         return redirect('index')
     user_info = res.json()
-    print(user_info)
-    return check_account(request, token, user_info)
+    
+    if login_type == "user":
+        return check_account(request, token, user_info)
+    elif login_type == "manager":
+        return save_manager(request, token, user_info)
 
 # Function to check if the account exists and register or update accordingly
 def check_account(request, token, user_info):
@@ -151,3 +165,33 @@ def update_create_account(request, token, user_info):
 def eve_logout(request):
     logout(request)
     return redirect("/")
+
+# Function to check the manager
+def save_manager(request, token, user_info):
+    expiration = timezone.now() + timedelta(minutes=20)
+    
+    if Manager.objects.exists():
+        man = Manager.objects.first()
+        man.character_id = user_info['CharacterID']
+        man.character_name = user_info['CharacterName']
+        man.access_token = token['access_token']
+        man.refresh_token = token['refresh_token']
+        man.expiration = expiration
+        man = esi_views.corp_alliance_info(man)
+        man = esi_views.wallet_info(man)
+
+    else:
+        man = Manager.objects.create(
+            character_id = user_info['CharacterID'],
+            character_name = user_info['CharacterName'],
+            access_token = token['access_token'],
+            refresh_token = token['refresh_token'],
+            expiration = expiration,
+        )
+        
+        man = esi_views.corp_alliance_info(man)
+        man = esi_views.wallet_info(man)
+        
+    man.save()
+    
+    return redirect("/buybackprogram/")

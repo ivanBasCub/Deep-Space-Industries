@@ -18,9 +18,6 @@
     <li class="nav-item sub-item">
         <a href="/locations/" class="btn btn-primary">Locations</a>
     </li>
-    <li class="nav-item sub-item">
-        <a href="" class="btn btn-primary">Programs</a>
-    </li>
 </ul>
 {% endblock %}
 
@@ -37,9 +34,9 @@
                         <small class="form-text text-muted"> Para poder sacar el ID de la estación tienes que copiar el mensaje de la estación (&lt;url=showinfo:35833//1044752365771&gt;Perimeter - 0.0% Neutral States Market HQ&lt;/url&gt;) y copiar el segundo ID que te sale en el URL</small>
                         <br>
                         <label for="station_id">Station ID</label>
-                        <input class="form-control" type="text" name="station_id" id="station_id" placeholder="1044752365771">
+                        <input class="form-control" type="text" name="station_id" id="station_id" placeholder="1044752365771" required>
                     </div>
-                    <div class="form-group">
+                    <div class="d-grid gap-2 my-2">
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>

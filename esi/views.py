@@ -57,8 +57,8 @@ def wallet_info(character):
     return character
 
 # Function obtain EvE Item Data
-def item_data(item_id):
-    headers_2 = {
+def item_data_id(item_id):
+    headers = {
         "Accept-Language": "",
         "If-None-Match": "",
         "X-Compatibility-Date": "2020-01-01",
@@ -66,9 +66,9 @@ def item_data(item_id):
         "Accept": "application/json"
     }
 
-    response = requests.get(f"{settings.EVE_ESI_URL}/universe/types/{item_id}", headers = headers_2)
+    response = requests.get(f"{settings.EVE_ESI_URL}/universe/types/{item_id}", headers = headers)
     return response.json()
-
+    
 # Function obtain structures data
 def structure_data(character, structure_id):
   
