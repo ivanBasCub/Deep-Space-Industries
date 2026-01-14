@@ -32,6 +32,7 @@ urlpatterns = [
     path('buybackprogram/add/', web_views.add_buyback_program, name="add_program"),
     path('buybackprogram/<int:program_id>/edit/', web_views.edit_buyback_program, name="edit_program"),
     path('buybackprogram/<int:program_id>/del/', web_views.del_buyback_program, name="del_program"),    
+    path('buybackprogram/<int:program_id>/calculate/', web_views.program_calculator, name="program_calculator"),
     # Manager
     path('manager/login/', sso_views.eve_login_manager, name="manager_login"),
     # Special Taxes

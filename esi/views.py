@@ -1,5 +1,4 @@
 from django.conf import settings
-from sso.models import CharacterEve
 import requests
 
 # Function to get corporation and alliance info for a character
@@ -87,4 +86,24 @@ def structure_data(character, structure_id):
         headers=headers
     )
     print(response.status_code)
+    return response.json()
+
+# Function to obtain the apprasial
+def apprisal_data(program, items):
+    headers = {
+        "accept":"application/json",
+        "Content-Type":"text/plain",
+        "X-ApiKey" : settings.JANICE_API_KEY
+    }
+    
+    if program.jita_buy:
+        jita_price = "buy"
+    else:
+        jita_price = "sell"
+    
+    url = f"{settings.JANICE_API_URL}appraisal?market=2&designation=appraisal&pricing={jita_price}&pricingVariant=immediate&persist=false&compactize=true&pricePercentage=100"
+    response = requests.post(url, headers=headers, data=items)
+    if response.status_code != 200:
+        return {}
+    
     return response.json()

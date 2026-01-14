@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from sso.models import CharacterEve
 from buyback.models import BuyBackProgram, ProgramSpecialTax, Location, BuyBackServices, Manager
-from esi.views import structure_data, item_data_id
+from esi.views import structure_data, item_data_id, apprisal_data
+import re
+import random
+import string
 
 def index(request ):
     if request.user.is_authenticated:
@@ -249,3 +253,126 @@ def del_location(request, structure_id):
     
     return redirect("/locations/")
     
+# Contract Calculator
+@login_required(login_url="/")
+def program_calculator(request, program_id):
+    # View Classes
+    class Item():
+        def __init__(self,item_id, item_name, amount, buy_price, sell_price, item_tax, is_allowed, final_price, total):
+            self.item_id = item_id
+            self.item_name = item_name
+            self.amount = amount
+            self.buy_price = buy_price
+            self.sell_price = sell_price
+            self.item_tax = item_tax
+            self.is_allowed = is_allowed
+            self.final_price = final_price
+            self.total = total
+    
+    class Contract():
+        def __init__(self, contract_id, raw_price, total_volume, general_tax, freigther_tax, donation_tax, net_price):
+            self.contract_id = contract_id
+            self.raw_price = raw_price
+            self.total_volume = total_volume
+            self.general_tax = general_tax
+            self.freigther_tax = freigther_tax
+            self.donation_tax = donation_tax
+            self.net_price = net_price
+            
+    # Obtain data for the database
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    program = BuyBackProgram.objects.get(id = program_id)
+    program.jita_buy = program.settings.filter(name="Jita Buy").exists()
+    program.freighter = program.settings.filter(name="Freight").exists()
+    list_special_taxes = ProgramSpecialTax.objects.filter(program = program).all()
+    
+    
+    if request.method == "POST":
+        items = request.POST.get("items")
+        donation = int(request.POST.get("donation"))
+        pattern = re.compile(r"^(.+?)\s+(\d+)$")
+        """
+        if not bool(pattern.match(items)):
+            messages.warning(request, "Copy and paste the item data from your inventory.")
+            return redirect(f"/buybackprogram/{program.id}/calculate")
+        """
+        data = apprisal_data(program, items)
+        # Contract Id
+        characters = string.ascii_letters + string.digits 
+        contract_id = f"{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}"
+        
+        # General Contract Data
+        total_volume = data["totalPackagedVolume"]
+        raw_price=0
+        if program.jita_buy:
+            raw_price = data["effectivePrices"]["totalBuyPrice"] / 100 
+        else:
+            raw_price = data["effectivePrices"]["totalSellPrice"] / 100
+
+        list_items = []
+        
+        for janice_item in data["items"]:
+            special_item = ProgramSpecialTax.objects.filter(item_id = janice_item["itemType"]["eid"]).first()
+            
+            item = Item(
+                item_id=janice_item["itemType"]["eid"],
+                item_name=janice_item["itemType"]["name"],
+                amount=janice_item["amount"],
+                buy_price=janice_item["effectivePrices"]["buyPrice"] / 100,
+                sell_price=janice_item["effectivePrices"]["sellPrice"] / 100,
+                item_tax= program.tax,
+                is_allowed=True,
+                final_price=0,
+                total=0
+            )
+            
+            if special_item:
+                item.item_tax = program.tax + special_item.special_tax
+                item.is_allowed = special_item.is_allowed
+            
+            if program.jita_buy:
+                item.final_price = item.buy_price - (item.buy_price * (item.item_tax / 100))
+            else: 
+                item.final_price = item.sell_price - (item.sell_price * (item.item_tax / 100))
+        
+            item.total = item.final_price * item.amount
+        
+            list_items.append(item)
+            
+        total_price = 0
+        freighter_tax = 0
+        donation_tax = 0
+        
+        for item in list_items:
+            total_price = total_price + item.total
+            
+        if program.freighter_tax != 0:
+            freighter_tax = total_volume * program.freighter_tax
+            
+        if donation != 0:
+            donation_tax = total_price * (donation / 100)
+            
+        net_price = (total_price - donation_tax) + freighter_tax
+        
+        contract = Contract(
+            contract_id=contract_id,
+            raw_price= raw_price,
+            total_volume= total_volume,
+            general_tax= raw_price - total_price,
+            freigther_tax=freighter_tax,
+            donation_tax=donation_tax,
+            net_price=net_price
+        )
+        
+        return render(request,"buyback/calculate.html",{
+            "main":main,
+            "program": program,
+            "donation": donation,
+            "list_items": list_items,
+            "contract": contract
+        })
+        
+    return render(request,"buyback/calculate.html",{
+        "main":main,
+        "program": program
+    })

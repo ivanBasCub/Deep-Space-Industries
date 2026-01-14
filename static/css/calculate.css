@@ -1,0 +1,19 @@
+.alert{
+    margin-bottom: 0;
+}
+.alert-warning{
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+.alert-danger{
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+.alert-success{
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+.alert-info{
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
