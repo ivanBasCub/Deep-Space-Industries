@@ -12,10 +12,11 @@ class Location(models.Model):
     station_name = models.CharField(max_length=255)
     
     def __str__(self):
-        return self.name
+        return self.station_name
     
 class Manager(models.Model):
-    character_id = models.BigIntegerField(primary_key=True)
+    unique_id = models.AutoField(primary_key=True)
+    character_id = models.BigIntegerField(default=0)
     character_name = models.CharField(max_length=255)
     
     access_token = models.TextField(default='')

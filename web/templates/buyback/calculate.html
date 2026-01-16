@@ -191,7 +191,20 @@
                         <td>{{item.item_tax}} %</td>
                         <td>{{item.final_price|format_number}}</td>
                         <td>{{item.total|format_number}}</td>
-                        <td></td>
+                        <td>
+                            {% if not item.is_allowed %}
+                            <i style="color: red; margin: 0;" class="bi bi-hand-thumbs-down" title="{{item.item_name}} is disallowed in this program"></i>
+                            {% endif %}
+                            {% if item.final_price == 0 %}
+                            <i style="color: red; margin: 0;" class="bi bi-question-lg" title="{{item.item_name}} has no price data"></i>
+                            {% endif %}
+                            {% if item.tax_difference < 0 %}
+                            <i style="color: green; margin: 0;" class="bi bi-percent" title="{{item.item_name}} has an decreased {{item.tax_difference}} % item specific tax applied on it"></i>
+                            {% endif %}
+                            {% if item.tax_difference > 0 %}
+                            <i style="color: gold; margin: 0;" class="bi bi-percent" title="{{item.item_name}} has an additional {{item.tax_difference}} % item specific tax applied on it"></i>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

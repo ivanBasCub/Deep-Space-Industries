@@ -36,7 +36,7 @@ def eve_login_user(request):
     return eve_login(request, scope, "user")
 
 def eve_login_manager(request):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     scope = settings.EVE_SSO_SCOPE
@@ -172,29 +172,52 @@ def eve_logout(request):
 # Function to check the manager
 def save_manager(request, token, user_info):
     expiration = timezone.now() + timedelta(minutes=20)
-    
-    if Manager.objects.exists():
-        man = Manager.objects.first()
-        man.character_id = user_info['CharacterID']
-        man.character_name = user_info['CharacterName']
-        man.access_token = token['access_token']
-        man.refresh_token = token['refresh_token']
-        man.expiration = expiration
-        man = esi_views.corp_alliance_info(man)
-        man = esi_views.wallet_info(man)
 
-    else:
-        man = Manager.objects.create(
-            character_id = user_info['CharacterID'],
-            character_name = user_info['CharacterName'],
-            access_token = token['access_token'],
-            refresh_token = token['refresh_token'],
-            expiration = expiration,
-        )
-        
-        man = esi_views.corp_alliance_info(man)
-        man = esi_views.wallet_info(man)
-        
+    man, created = Manager.objects.update_or_create(
+        unique_id=100,
+        defaults={
+            'character_id': user_info['CharacterID'],
+            'character_name': user_info['CharacterName'],
+            'access_token': token['access_token'],
+            'refresh_token': token['refresh_token'],
+            'expiration': expiration,
+        }
+    )
+
+    man = esi_views.corp_alliance_info(man)
+    man = esi_views.wallet_info(man)
     man.save()
-    
+
     return redirect("/buybackprogram/")
+
+
+
+# Function to refesh access_token
+def refresh_access_token(character):
+    headers = {
+        'Authorization' : f'Basic {b64encode(f"{settings.CLIENT_ID}:{settings.CLIENT_SECRET}".encode()).decode()}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    data = {
+        'grant_type' : 'refresh_token',
+        'refresh_token' : character.refresh_token
+    }
+    
+    response = requests.post(
+        url=settings.EVE_REFRESH_TOKEN_URL,
+        headers=headers,
+        data=data
+    )
+    
+    if response.status_code != 200:
+        print(f"Error al refrescar token de {character.characterName}: {response.text}")
+        
+    tokens = response.json()
+    expiration = timezone.now() + timedelta(minutes=20)
+    character.access_token = tokens['access_token']
+    character.refresh_token = tokens['refresh_token']
+    character.expiration = expiration
+    character = esi_views.corp_alliance_info(character)
+    character = esi_views.wallet_info(character)
+    character.save()

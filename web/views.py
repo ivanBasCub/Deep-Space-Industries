@@ -43,7 +43,8 @@ def buyback_program(request):
 ## Add program
 @login_required(login_url="/")
 def add_buyback_program(request):
-    if request.user.groups.filter(name="Admin").exists:
+    print(request.user.groups.all())
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -94,7 +95,7 @@ def add_buyback_program(request):
 # Edit Program
 @login_required(login_url="/")
 def edit_buyback_program(request, program_id):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -135,7 +136,7 @@ def edit_buyback_program(request, program_id):
 # Del program
 @login_required(login_url="/")
 def del_buyback_program(request, program_id):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     try:
@@ -168,7 +169,7 @@ def special_taxes(request, program_id):
 ## Add
 @login_required(login_url="/")
 def add_special_taxes(request, program_id):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -204,7 +205,7 @@ def add_special_taxes(request, program_id):
 ## Index
 @login_required(login_url='/')
 def locations(request):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -218,7 +219,7 @@ def locations(request):
 ## Add location to the database
 @login_required(login_url="/")
 def add_location(request):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -249,7 +250,7 @@ def add_location(request):
 
 @login_required(login_url="/")
 def del_special_tax(request, program_id, special_tax_id):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     try:
@@ -263,7 +264,7 @@ def del_special_tax(request, program_id, special_tax_id):
 ## Remove location to the database    
 @login_required(login_url="/")
 def del_location(request, structure_id):
-    if request.user.groups.filter(name="Admin").exists:
+    if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
     try:
@@ -279,7 +280,7 @@ def del_location(request, structure_id):
 def program_calculator(request, program_id):
     # View Classes
     class Item():
-        def __init__(self,item_id, item_name, amount, buy_price, sell_price, item_tax, is_allowed, final_price, total):
+        def __init__(self,item_id, item_name, amount, buy_price, sell_price, item_tax, is_allowed, final_price, total, tax_difference):
             self.item_id = item_id
             self.item_name = item_name
             self.amount = amount
@@ -289,6 +290,7 @@ def program_calculator(request, program_id):
             self.is_allowed = is_allowed
             self.final_price = final_price
             self.total = total
+            self.tax_difference = tax_difference
     
     class Contract():
         def __init__(self, contract_id, raw_price, total_volume, general_tax, freigther_tax, donation_tax, net_price):
@@ -304,6 +306,7 @@ def program_calculator(request, program_id):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     program = BuyBackProgram.objects.get(id = program_id)
     program.jita_buy = program.settings.filter(name="Jita Buy").exists()
+    program.all_items = program.settings.filter(name="All Items").exists()
     program.freighter = program.settings.filter(name="Freight").exists()
     list_special_taxes = ProgramSpecialTax.objects.filter(program = program).all()
     
@@ -321,40 +324,52 @@ def program_calculator(request, program_id):
         # General Contract Data
         total_volume = data["totalPackagedVolume"]
         raw_price=0
-        if program.jita_buy:
-            raw_price = data["effectivePrices"]["totalBuyPrice"] / 100 
-        else:
-            raw_price = data["effectivePrices"]["totalSellPrice"] / 100
 
         list_items = []
         
         for janice_item in data["items"]:
-            special_item = ProgramSpecialTax.objects.filter(item_id = janice_item["itemType"]["eid"]).first()
-            
+            special_item = ProgramSpecialTax.objects.filter(item_id=janice_item["itemType"]["eid"]).first()
+
+            buy = janice_item["effectivePrices"]["buyPrice"] / 100
+            sell = janice_item["effectivePrices"]["sellPrice"] / 100
+            tax = program.tax
+            allowed = True
+            tax_difference = 0
+            if special_item:
+                allowed = special_item.is_allowed
+                if allowed:
+                    tax_difference = special_item.special_tax
+                tax += special_item.special_tax
+            elif not program.all_items:
+                buy = 0
+                sell = 0
+                tax = 0
+                allowed = False
+
+            if allowed:
+                if program.jita_buy:
+                    raw_price += buy * janice_item["amount"]
+                else:
+                    raw_price += sell * janice_item["amount"]
+
+            final_price = buy if program.jita_buy else sell
+            final_price -= final_price * (tax / 100)
+
             item = Item(
                 item_id=janice_item["itemType"]["eid"],
                 item_name=janice_item["itemType"]["name"],
                 amount=janice_item["amount"],
-                buy_price=janice_item["effectivePrices"]["buyPrice"] / 100,
-                sell_price=janice_item["effectivePrices"]["sellPrice"] / 100,
-                item_tax= program.tax,
-                is_allowed=True,
-                final_price=0,
-                total=0
+                buy_price=buy,
+                sell_price=sell,
+                item_tax=tax,
+                is_allowed=allowed,
+                final_price=final_price,
+                total=final_price * janice_item["amount"],
+                tax_difference=tax_difference
             )
-            
-            if special_item:
-                item.item_tax = program.tax + special_item.special_tax
-                item.is_allowed = special_item.is_allowed
-            
-            if program.jita_buy:
-                item.final_price = item.buy_price - (item.buy_price * (item.item_tax / 100))
-            else: 
-                item.final_price = item.sell_price - (item.sell_price * (item.item_tax / 100))
-        
-            item.total = item.final_price * item.amount
-        
+
             list_items.append(item)
+
             
         total_price = 0
         freighter_tax = 0
