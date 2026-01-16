@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load filters %}
 
 {% block style %}
 <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
@@ -11,6 +12,7 @@ Special Taxes
 {% endblock %}
 
 {% block navbar_menu %}
+{% if request.user|has_group:"Admin" %}
 <ul class="nav navbar-nav sub-nav">
     <li class="nav-item sub-item">
         <a href="/manager/login/" class="btn btn-primary">Setup Manager</a>
@@ -19,6 +21,7 @@ Special Taxes
         <a href="/locations/" class="btn btn-primary">Locations</a>
     </li>
 </ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -26,11 +29,13 @@ Special Taxes
     <div class="card">
         <div class="card-header">
             Program Special Taxes
+            {% if request.user|has_group:"Admin" %}
             <div class="float-end">
                 <a href="/buybackprogram/{{program.id}}/special_taxes/add/" class="btn btn-sm btn-primary">
                     <i class="bi bi-plus-circle"></i>
                 </a>
             </div>
+            {% endif %}
         </div>
         <div class="card-body">
             <p style="margin-top: 5px;">
@@ -45,7 +50,9 @@ Special Taxes
                         <th style="text-align: center;">Tax adjustment</th>
                         <th style="text-align: center;">Total Tax</th>
                         <th style="text-align: center;">Is allowed</th>
+                        {% if request.user|has_group:"Admin" %}
                         <th style="text-align: center;">Actions</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -64,11 +71,13 @@ Special Taxes
                                 <i class="bi bi-x" style="color:red"></i>
                             {% endif %}
                         </td> 
+                        {% if request.user|has_group:"Admin" %}
                         <td style="text-align: center;">
                             <a href="/buybackprogram/{{program.id}}/special_taxes/{{item.id}}/del/" class="btn btn-sm btn-danger">
                                 <i class="bi bi-trash-fill"></i>
                             </a>
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

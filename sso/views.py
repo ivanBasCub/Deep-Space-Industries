@@ -36,6 +36,9 @@ def eve_login_user(request):
     return eve_login(request, scope, "user")
 
 def eve_login_manager(request):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     scope = settings.EVE_SSO_SCOPE
     return eve_login(request, scope, "manager")
 

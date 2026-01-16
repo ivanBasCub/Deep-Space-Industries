@@ -1,14 +1,12 @@
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from sso.models import CharacterEve
 from buyback.models import BuyBackProgram, ProgramSpecialTax, Location, BuyBackServices, Manager
 from esi.views import structure_data, item_data_id, apprisal_data
-import re
 import random
 import string
 
-def index(request ):
+def index(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     else:
@@ -45,6 +43,9 @@ def buyback_program(request):
 ## Add program
 @login_required(login_url="/")
 def add_buyback_program(request):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     list_locations = Location.objects.exclude(station_name="Anywhere").all()
     list_services = BuyBackServices.objects.exclude(name__in=["Jita Buy","Jita Sell"]).all()
@@ -90,10 +91,12 @@ def add_buyback_program(request):
         "base_prices" : base_price
     })
 
-#TODO: Hacer la función edit_buyback_programs
 # Edit Program
 @login_required(login_url="/")
 def edit_buyback_program(request, program_id):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     program = BuyBackProgram.objects.get(id = program_id)
     list_locations = Location.objects.exclude(station_name="Anywhere").all()
@@ -132,6 +135,9 @@ def edit_buyback_program(request, program_id):
 # Del program
 @login_required(login_url="/")
 def del_buyback_program(request, program_id):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     try:
         program = BuyBackProgram.objects.get(id = program_id)
         special_taxes = ProgramSpecialTax.objects.filter(program = program).all()
@@ -162,6 +168,9 @@ def special_taxes(request, program_id):
 ## Add
 @login_required(login_url="/")
 def add_special_taxes(request, program_id):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     program = BuyBackProgram.objects.get(id = program_id)
     program.max_tax = 100 - program.tax
@@ -195,6 +204,9 @@ def add_special_taxes(request, program_id):
 ## Index
 @login_required(login_url='/')
 def locations(request):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     list_locations = Location.objects.all()
     
@@ -206,6 +218,9 @@ def locations(request):
 ## Add location to the database
 @login_required(login_url="/")
 def add_location(request):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     
     if request.method == "POST":
@@ -234,6 +249,9 @@ def add_location(request):
 
 @login_required(login_url="/")
 def del_special_tax(request, program_id, special_tax_id):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     try:
         special_tax = ProgramSpecialTax.objects.get(id=special_tax_id)
         special_tax.delete()
@@ -245,6 +263,9 @@ def del_special_tax(request, program_id, special_tax_id):
 ## Remove location to the database    
 @login_required(login_url="/")
 def del_location(request, structure_id):
+    if request.user.groups.filter(name="Admin").exists:
+        return redirect("/dashboard/")
+    
     try:
         location = Location.objects.get(station_id=structure_id)
         location.delete()
@@ -290,16 +311,12 @@ def program_calculator(request, program_id):
     if request.method == "POST":
         items = request.POST.get("items")
         donation = int(request.POST.get("donation"))
-        pattern = re.compile(r"^(.+?)\s+(\d+)$")
-        """
-        if not bool(pattern.match(items)):
-            messages.warning(request, "Copy and paste the item data from your inventory.")
-            return redirect(f"/buybackprogram/{program.id}/calculate")
-        """
+        
         data = apprisal_data(program, items)
+        
         # Contract Id
         characters = string.ascii_letters + string.digits 
-        contract_id = f"{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}"
+        contract_id = f"{program.id}-{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}"
         
         # General Contract Data
         total_volume = data["totalPackagedVolume"]

@@ -14,6 +14,7 @@
 {% endblock %}
 
 {% block navbar_menu %}
+{% if request.user|has_group:"Admin" %}
 <ul class="nav navbar-nav sub-nav">
     <li class="nav-item sub-item">
         <a href="/manager/login/" class="btn btn-primary">Setup Manager</a>
@@ -22,6 +23,7 @@
         <a href="/locations/" class="btn btn-primary">Locations</a>
     </li>
 </ul>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -130,7 +132,7 @@
                     </tr>
                     <tr>
                         <th>Total volume</th>
-                        <td>{{contract.total_volume}} m&sup3;</td>
+                        <td>{{contract.total_volume|format_number}} m&sup3;</td>
                     </tr>
                     {% if program.freighter %}
                     <tr>
