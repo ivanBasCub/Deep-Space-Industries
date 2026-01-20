@@ -1,7 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from sso.models import CharacterEve
 from buyback.models import BuyBackProgram, ProgramSpecialTax, Location, BuyBackServices, Manager
+from shop.models import Item, ItemsOrder, Order
 from esi.views import structure_data, item_data_id, apprisal_data
 import random
 import string
@@ -180,21 +182,24 @@ def add_special_taxes(request, program_id):
         items = request.POST.get("items_name")
         special_tax = int(request.POST.get("special_tax") or 0)
         allowed = request.POST.get("allowed")
-        item_list = [line.strip() for line in items.split("\n")]
         is_allowed = allowed == "true"
         
-        for item in item_list:
-            data = item_data_id(item)
+        data = apprisal_data(program, items)
+        
+        
+        for item in data["items"]:
             
             ProgramSpecialTax.objects.get_or_create( 
-                item_id=item, 
+                item_id=item["itemType"]["eid"], 
                 program=program, 
                 defaults={ 
-                    "item_name": data["name"], 
+                    "item_name": item["itemType"]["name"], 
                     "special_tax": special_tax, 
                     "is_allowed": is_allowed, 
                 }
             )
+            
+        redirect(f"/buyback/{program_id}/special_taxes/")
     
     return render(request, 'buyback/special_taxes/add.html',{
         'main':main,
@@ -308,7 +313,6 @@ def program_calculator(request, program_id):
     program.jita_buy = program.settings.filter(name="Jita Buy").exists()
     program.all_items = program.settings.filter(name="All Items").exists()
     program.freighter = program.settings.filter(name="Freight").exists()
-    list_special_taxes = ProgramSpecialTax.objects.filter(program = program).all()
     
     
     if request.method == "POST":
@@ -408,3 +412,73 @@ def program_calculator(request, program_id):
         "main":main,
         "program": program
     })
+    
+## SHOP
+@login_required(login_url="/")
+def shop(request):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_items = Item.objects.all()
+    cart = request.session.get("cart", {})
+
+    if request.method == "POST":
+        item_id = int(request.POST.get("product_id") or 0)
+        quantity = int(request.POST.get("quantity") or 0)
+
+        item = get_object_or_404(Item, item_id=item_id)
+        nueva_cantidad = cart.get(str(item_id), 0) + quantity
+
+        if nueva_cantidad > item.quantity:
+            messages.warning(request, "There is not enough stock available")
+            return redirect("/shop/")
+
+        cart[str(item_id)] = nueva_cantidad
+        request.session["cart"] = cart
+
+        messages.success(request, "Item added to basket")
+        return redirect("/shop/")
+
+    cart_items = []
+    total = 0
+
+    for item_id, qty in cart.items():
+        item = Item.objects.get(item_id=item_id)
+        subtotal = item.price * qty
+        total += subtotal
+
+        cart_items.append({
+            "item": item,
+            "quantity": qty,
+            "subtotal": subtotal,
+        })
+
+    return render(request, "shop/index.html", {
+        "main": main,
+        "list_items": list_items,
+        "cart_items": cart_items,
+        "total": total,
+    })
+
+
+# View Item Sell Orders
+@login_required(login_url="/")
+def shop_items(request):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_items = Item.objects.all()
+    
+    return render(request, "shop/items/index.html",{
+        "main": main,
+        "list_items": list_items,
+    })
+    
+@login_required
+def remove_from_cart(request, item_id):
+    cart = request.session.get("cart", {})
+
+    if str(item_id) in cart:
+        del cart[str(item_id)]
+        request.session["cart"] = cart
+
+    return redirect("/shop/")

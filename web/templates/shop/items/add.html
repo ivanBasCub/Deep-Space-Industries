@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>Shop Items - Deep Space Industries</title>
+{% endblock %}
+
+{% block title %}
+Shop Items
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav me-auto">
+    <li class="nav-item">
+        <a href="" class="nav-link py-0">
+            <span class="btn btn-secondary">Orders History</span>
+        </a>
+    </li>
+</ul>
+<ul class="nav navbar-nav">
+    {% if request.user|has_group:"Admin" %}
+        <li class="nav-item py-0 ms-2">
+            <a href="/shop/items/" class="nav-link py-0">
+                <span class="btn btn-primary">Modify Products</span>
+            </a>
+        </li>
+    {% endif %}
+</ul>
+{% endblock %}

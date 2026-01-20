@@ -96,10 +96,7 @@ def apprisal_data(program, items):
         "X-ApiKey" : settings.JANICE_API_KEY
     }
     
-    if program.jita_buy:
-        jita_price = "buy"
-    else:
-        jita_price = "sell"
+    jita_price = "buy" if getattr(program, "jita_buy", False) else "sell"
     
     url = f"{settings.JANICE_API_URL}appraisal?market=2&designation=appraisal&pricing={jita_price}&pricingVariant=immediate&persist=false&compactize=true&pricePercentage=100"
     response = requests.post(url, headers=headers, data=items)

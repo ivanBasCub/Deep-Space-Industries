@@ -42,5 +42,9 @@ urlpatterns = [
     # Locations
     path('locations/', web_views.locations, name="locations_index"),
     path('locations/add/', web_views.add_location, name="add_location"),
-    path('locations/<int:structure_id>/del/', web_views.del_location, name="del_location")
+    path('locations/<int:structure_id>/del/', web_views.del_location, name="del_location"),
+    # Shop
+    path('shop/', web_views.shop, name="shop"),
+    path('shop/items/', web_views.shop_items, name="shop_items"),
+    path('shop/items/<int:item_id>/del/', web_views.remove_from_cart, name="del_item")
 ]
