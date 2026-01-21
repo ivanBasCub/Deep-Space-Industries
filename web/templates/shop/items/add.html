@@ -22,11 +22,59 @@ Shop Items
 </ul>
 <ul class="nav navbar-nav">
     {% if request.user|has_group:"Admin" %}
-        <li class="nav-item py-0 ms-2">
-            <a href="/shop/items/" class="nav-link py-0">
-                <span class="btn btn-primary">Modify Products</span>
-            </a>
-        </li>
+    <li class="nav-item py-0 ms-2">
+        <a href="/shop/orders/" class="nav-link py-0">
+            <span class="btn btn-primary">View Orders</span>
+        </a>
+    </li>
+    <li class="nav-item py-0 ms-2">
+        <a href="/shop/items/" class="nav-link py-0">
+            <span class="btn btn-primary">Modify Products</span>
+        </a>
+    </li>
     {% endif %}
 </ul>
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="card">
+        <div class="card-header">
+            {% if status == 0 %} Add {% else %} Edit {% endif %} Sell Order
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="item_name" class="form-label">Item Name</label>
+                    <input type="text" name="item_name" id="item_name" class="form-control" placeholder="Retribution" required {% if item %} value="{{item.item_name}}" {% endif %} >
+                    <small class="form-text text-muted">
+                        Use the exact name in the game
+                    </small>
+                </div>
+                <div class="form-group">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <input type="number"  name="quantity" id="quantity" class="form-control" required placeholder="10" min="1" {% if item %} value="{{item.quantity}}" {% endif %} >
+                </div>
+                <div class="form-group">
+                    <label for="price" class="form-label">Price</label>
+                    <input type="number" name="price" id="price" class="form-control" required placeholder="20000000" min="1" {% if item %} value="{{item.price}}" {% endif %} >
+                </div>
+                <div class="form-group">
+                    <label for="status" class="form-label">Available</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="" selected disabled>Select one option</option>
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
+                </div>
+                <div class="d-grid gap-2 my-2">
+                    <button type="submit" class="btn btn-success">
+                        {% if status == 0 %} Create {% else %} Edit {% endif %} Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

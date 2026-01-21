@@ -22,11 +22,16 @@ Shop Items
 </ul>
 <ul class="nav navbar-nav">
     {% if request.user|has_group:"Admin" %}
-        <li class="nav-item py-0 ms-2">
-            <a href="/shop/items/" class="nav-link py-0">
-                <span class="btn btn-primary">Modify Products</span>
-            </a>
-        </li>
+    <li class="nav-item py-0 ms-2">
+        <a href="/shop/orders/" class="nav-link py-0">
+            <span class="btn btn-primary">View Orders</span>
+        </a>
+    </li>
+    <li class="nav-item py-0 ms-2">
+        <a href="/shop/items/" class="nav-link py-0">
+            <span class="btn btn-primary">Modify Products</span>
+        </a>
+    </li>
     {% endif %}
 </ul>
 {% endblock %}
@@ -36,6 +41,11 @@ Shop Items
     <div class="card">
         <div class="card-header">
             Items Sell Orders
+            <div class="float-end">
+                <a href="/shop/items/add/" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+            </div>
         </div>
         <table class="table table-striped table-hover no-footer w-100" style="width: 100%; margin: auto;">
             <thead>
@@ -75,10 +85,10 @@ Shop Items
                         {% endif %}
                     </td>
                     <td class="text-center">
-                        <a href="" class="btn btn-sm btn-warning" title="Edit Ragnarok Order">
+                        <a href="/shop/items/{{item.item_id}}/edit/" class="btn btn-sm btn-warning" title="Edit {{item.item_name}} Order">
                             <i class="bi bi-pencil-square"></i>
                         </a>
-                        <a href="" class="btn btn-sm btn-danger" title="Remove Ragnarok Order">
+                        <a href="/shop/items/{{item.item_id}}/del/" class="btn btn-sm btn-danger" title="Remove {{item.item_name}} Order">
                             <i class="bi bi-trash"></i>
                         </a>
                     </td>

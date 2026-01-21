@@ -45,6 +45,11 @@ urlpatterns = [
     path('locations/<int:structure_id>/del/', web_views.del_location, name="del_location"),
     # Shop
     path('shop/', web_views.shop, name="shop"),
+    path('shop/order/confirm/', web_views.confirm_order, name="confirm_order"),
+    path('shop/orders/', web_views.pending_orders, name="pending_orders"),
     path('shop/items/', web_views.shop_items, name="shop_items"),
-    path('shop/items/<int:item_id>/del/', web_views.remove_from_cart, name="del_item")
+    path('shop/items/add/', web_views.add_shop_items, name="add_shop_items"),
+    path('shop/items/<int:item_id>/edit/', web_views.edit_shop_items, name="edit_shop_items"),
+    path('shop/items/<int:item_id>/del/',web_views.remove_item_shop, name="del_item"),
+    path('cart/<int:item_id>/del/', web_views.remove_from_cart, name="del_cart_item")
 ]

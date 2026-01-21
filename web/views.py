@@ -184,8 +184,7 @@ def add_special_taxes(request, program_id):
         allowed = request.POST.get("allowed")
         is_allowed = allowed == "true"
         
-        data = apprisal_data(program, items)
-        
+        data = apprisal_data(items, program)
         
         for item in data["items"]:
             
@@ -319,7 +318,7 @@ def program_calculator(request, program_id):
         items = request.POST.get("items")
         donation = int(request.POST.get("donation"))
         
-        data = apprisal_data(program, items)
+        data = apprisal_data(items, program)
         
         # Contract Id
         characters = string.ascii_letters + string.digits 
@@ -458,6 +457,48 @@ def shop(request):
         "total": total,
     })
 
+# Remove item from the cart
+@login_required(login_url="/")
+def remove_from_cart(request, item_id):
+    cart = request.session.get("cart", {})
+
+    if str(item_id) in cart:
+        del cart[str(item_id)]
+        request.session["cart"] = cart
+
+    return redirect("/shop/")
+
+# Confirm the order
+@login_required(login_url="/")
+def confirm_order(request):
+    order = Order.objects.create(
+        user=request.user,
+        status=0
+    )
+    
+    cart = request.session.get("cart", {})
+
+    characters = string.ascii_letters + string.digits 
+    order_id = f"{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}"
+    order.order_id = order_id
+    order.save()
+    
+    for item_id, quantity in cart.items():
+        item = Item.objects.get(item_id=item_id)
+
+        ItemsOrder.objects.get_or_create(
+            order=order,
+            item=item,
+            quantity=quantity
+        )
+
+        item.quantity -= quantity
+        item.save()
+
+    request.session["cart"] = {}
+
+    messages.success(request, "Your order has been successfully created")
+    return redirect("/shop/")
 
 # View Item Sell Orders
 @login_required(login_url="/")
@@ -472,13 +513,83 @@ def shop_items(request):
         "main": main,
         "list_items": list_items,
     })
+
+# Add Item Sell Order
+@login_required(login_url="/")
+def add_shop_items(request):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
     
-@login_required
-def remove_from_cart(request, item_id):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    if request.method == "POST":
+        item_name = request.POST.get("item_name")
+        quantity = int(request.POST.get("quantity") or 0)
+        price = int(request.POST.get("price") or 0)
+        status = request.POST.get("status") == "true"
+        
+        data = apprisal_data(items=item_name)
+
+        Item.objects.create(
+            item_id = data["items"][0]["itemType"]["eid"],
+            item_name=data["items"][0]["itemType"]["name"],
+            quantity = quantity,
+            price = price,
+            status = status
+        )
+        
+        return redirect("/shop/items/")
+        
+    
+    return render(request, "shop/items/add.html",{
+        "main": main,
+        "status":0
+    })
+
+# Edit Item Sell Order
+@login_required(login_url="/")
+def edit_shop_items(request, item_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    item = Item.objects.get(item_id=item_id)
+    
+    return render(request, "shop/items/add.html",{
+        "main": main,
+        "item": item,
+        "status": 1 
+    })
+
+# Remove Item Sell Order
+@login_required(login_url="/")
+def remove_item_shop(request, item_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
     cart = request.session.get("cart", {})
 
-    if str(item_id) in cart:
-        del cart[str(item_id)]
-        request.session["cart"] = cart
+    try:
+        item = Item.objects.get(item_id=item_id)
+        
+        if str(item_id) in cart:
+            del cart[str(item_id)]
+            request.session["cart"] = cart
+        
+        item.delete()
+    except Item.DoesNotExist:
+        pass
+    
+    return redirect("/shop/items/")
 
-    return redirect("/shop/")
+# View Pending Orders
+@login_required(login_url="/")
+def pending_orders(request):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_orders = Order.objects.filter(status = 0)
+    
+    return render(request, "shop/orders.html",{
+        "main": main,
+        "list_orders": list_orders
+    })

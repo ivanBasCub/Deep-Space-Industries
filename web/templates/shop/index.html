@@ -23,6 +23,11 @@ Shop
 <ul class="nav navbar-nav">
     {% if request.user|has_group:"Admin" %}
     <li class="nav-item py-0 ms-2">
+        <a href="/shop/orders/" class="nav-link py-0">
+            <span class="btn btn-primary">View Orders</span>
+        </a>
+    </li>
+    <li class="nav-item py-0 ms-2">
         <a href="/shop/items/" class="nav-link py-0">
             <span class="btn btn-primary">Modify Products</span>
         </a>
@@ -50,7 +55,7 @@ Shop
 
                 {% for ci in cart_items %}
                     <div class="position-relative border-bottom pb-2 mb-2">
-                        <a href="/shop/items/{{ ci.item.item_id }}/del/"
+                        <a href="/cart/{{ ci.item.item_id }}/del/"
                            class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2">
                             <i class="bi bi-trash"></i>
                         </a>
@@ -71,7 +76,7 @@ Shop
                     <strong>{{ total|format_number }} ISK</strong>
                 </div>
 
-                <a href="" class="btn btn-success w-100">
+                <a href="/shop/order/confirm/" class="btn btn-success w-100">
                     Checkout 
                 </a>
             </div>

@@ -89,7 +89,7 @@ def structure_data(character, structure_id):
     return response.json()
 
 # Function to obtain the apprasial
-def apprisal_data(program, items):
+def apprisal_data(items, program = False):
     headers = {
         "accept":"application/json",
         "Content-Type":"text/plain",
