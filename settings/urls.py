@@ -47,6 +47,7 @@ urlpatterns = [
     path('shop/', web_views.shop, name="shop"),
     path('shop/order/confirm/', web_views.confirm_order, name="confirm_order"),
     path('shop/orders/', web_views.pending_orders, name="pending_orders"),
+    path('shop/orders/history/', web_views.order_history, name="order_history"),
     path('shop/items/', web_views.shop_items, name="shop_items"),
     path('shop/items/add/', web_views.add_shop_items, name="add_shop_items"),
     path('shop/items/<int:item_id>/edit/', web_views.edit_shop_items, name="edit_shop_items"),

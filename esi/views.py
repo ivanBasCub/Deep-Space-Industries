@@ -1,4 +1,5 @@
 from django.conf import settings
+from buyback.models import Manager
 import requests
 
 # Function to get corporation and alliance info for a character
@@ -104,3 +105,37 @@ def apprisal_data(items, program = False):
         return {}
     
     return response.json()
+
+# Function to obtain the contract data from the ESI API
+def update_order_data(order):
+    manager = Manager.objects.first()
+    headers = {
+        "Accept-Language": "",
+        "If-None-Match": "",
+        "X-Compatibility-Date": "2025-12-16",
+        "X-Tenant": "",
+        "If-Modified-Since": "",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {manager.access_token}"
+    }
+    
+    url = f"{settings.EVE_ESI_URL}/characters/{manager.character_id}/contracts/"
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return 1
+    
+    contracts = response.json()
+    
+    found = False
+    for contract in contracts:
+        if contract['title'] == order.order_id:
+            found = True
+            if order.status == 0:
+                order.status = 1
+            break
+        
+    if not found and order.status == 1:
+        order.status = 2
+
+    order.save()
+    return 0

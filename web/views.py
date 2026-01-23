@@ -554,6 +554,23 @@ def edit_shop_items(request, item_id):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     item = Item.objects.get(item_id=item_id)
     
+    if request.method == "POST":
+        item_name = request.POST.get("item_name")
+        quantity = int(request.POST.get("quantity") or 0)
+        price = float(request.POST.get("price") or 0)
+        status = request.POST.get("status") == "true"
+        
+        data = apprisal_data(items=item_name)
+
+        item.item_id = data["items"][0]["itemType"]["eid"]
+        item.item_name = data["items"][0]["itemType"]["name"]
+        item.quantity = quantity
+        item.price = price
+        item.status = status
+        item.save()
+        
+        return redirect("/shop/items/")
+    
     return render(request, "shop/items/add.html",{
         "main": main,
         "item": item,
@@ -589,7 +606,33 @@ def pending_orders(request):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     list_orders = Order.objects.filter(status = 0)
     
+    for order in list_orders:
+        order.user.username = order.user.username.replace("_"," ")
+    
     return render(request, "shop/orders.html",{
         "main": main,
         "list_orders": list_orders
+    })
+    
+# View Order History User
+@login_required(login_url="/")
+def order_history(request):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_orders = Order.objects.filter(user=request.user).order_by('status')
+    
+    total_value = 0
+    pending_orders = 0
+    pending_orders_value = 0
+    for order in list_orders:
+        total_value += order.total_price()
+        if order.status == 0:
+            pending_orders += 1
+            pending_orders_value += order.total_price()
+    
+    return render(request, "shop/order_history.html",{
+        "main": main,
+        "list_orders": list_orders,
+        "total_value": total_value,
+        "pending_orders": pending_orders,
+        "pending_orders_value": pending_orders_value
     })

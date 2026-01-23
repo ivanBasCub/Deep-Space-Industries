@@ -15,7 +15,7 @@ Shop Orders
 {% block navbar_menu %}
 <ul class="nav navbar-nav me-auto">
     <li class="nav-item">
-        <a href="" class="nav-link py-0">
+        <a href="/shop/orders/history/" class="nav-link py-0">
             <span class="btn btn-secondary">Orders History</span>
         </a>
     </li>
@@ -38,6 +38,29 @@ Shop Orders
 
 {% block content %}
 <div class="my-3">
+    <div class="card mb-3">
+        <div class="card-header">
+            Resume
+        </div>
+        <div class="card-body">
+            <table class="table table-hover table-striped no-footer w-100" style="width: 100%; margin: auto;">
+                <tbody>
+                    <tr>
+                        <td><strong>Total Pending Orders</strong>:</td>
+                        <td>{{pending_orders}}</td>
+                        <td><strong>Total Value</strong>:</td>
+                        <td>{{pending_orders_value|format_number}} ISK</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Orders</strong>:</td>
+                        <td>{{list_orders|length}}</td>
+                        <td><strong>Total Value</strong>:</td>
+                        <td>{{total_value|format_number}} ISK</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class="card">
         <div class="card-header">
             Order History
@@ -47,6 +70,7 @@ Shop Orders
                 <tr>
                     <th>Order_id</th>
                     <th>Character Name</th>
+                    <th>Status</th>
                     <th>Items</th>
                     <th>Total Price</th>
                 </tr>
@@ -56,6 +80,17 @@ Shop Orders
                 <tr>
                     <td style="vertical-align: middle;">{{order.order_id}}</td>
                     <td style="vertical-align: middle;">{{order.user.username}}</td>
+                    <td style="vertical-align: middle;">
+                        {% if order.status == 0 %}
+                            <span class="btn btn-sm btn-danger">Pending</span>
+                        {% elif order.status == 1 %}
+                            <span class="btn btn-sm btn-warning">Processing</span>
+                        {% elif order.status == 2 %}
+                            <span class="btn btn-sm btn-success">Completed</span>
+                        {% else %}
+                            <span class="btn btn-sm btn-secondary">Unknown</span>
+                        {% endif %}
+                    </td>
                     <td style="vertical-align: middle;">
                         <table class="table table-hover table-striped no-footer w-100" style="width: 100%; margin: auto;">
                             <thead>

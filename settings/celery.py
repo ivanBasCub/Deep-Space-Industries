@@ -12,6 +12,11 @@ app.conf.beat_schedule = {
         'task':'sso.tasks.tokens',
         'schedule': 600,
         'args':()
+    },
+    'check_orders':{
+        'task':'shop.tasks.check_order_status',
+        'schedule': 300,
+        'args':()
     }
 }
 
