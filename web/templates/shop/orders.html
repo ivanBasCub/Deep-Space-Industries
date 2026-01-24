@@ -5,7 +5,7 @@
 {% block style %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}">
 <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
-<title>Shop - Deep Space Industries</title>
+<title>Shop - Deep Space Industry</title>
 {% endblock %}
 
 {% block title %}
@@ -23,8 +23,13 @@ Shop Orders
 <ul class="nav navbar-nav">
     {% if request.user|has_group:"Admin" %}
     <li class="nav-item py-0 ms-2">
+        <a href="/shop/orders/history/admin/" class="nav-link py-0">
+            <span class="btn btn-primary">View all Orders</span>
+        </a>
+    </li>
+    <li class="nav-item py-0 ms-2">
         <a href="/shop/orders/" class="nav-link py-0">
-            <span class="btn btn-primary">View Orders</span>
+            <span class="btn btn-primary">Pending Orders</span>
         </a>
     </li>
     <li class="nav-item py-0 ms-2">
@@ -57,7 +62,8 @@ Shop Orders
                     <td style="vertical-align: middle;">{{order.order_id}}</td>
                     <td style="vertical-align: middle;">{{order.user.username}}</td>
                     <td style="vertical-align: middle;">
-                        <table class="table table-hover table-striped no-footer w-100" style="width: 100%; margin: auto;">
+                        <table class="table table-hover table-striped no-footer w-100"
+                            style="width: 100%; margin: auto;">
                             <thead>
                                 <tr>
                                     <th></th>
@@ -68,17 +74,18 @@ Shop Orders
                             </thead>
                             <tbody>
                                 {% for order_item in order.order_items.all %}
-                                    <tr>
-                                        <td><img src="https://image.eveonline.com/Type/{{order_item.item.item_id}}_32.png" class="rounded"></td>
-                                        <td>{{order_item.item.item_name}}</td>
-                                        <td>{{order_item.quantity}}</td>
-                                        <td>{{order_item.item.price|format_number}}</td>
-                                    </tr>
+                                <tr>
+                                    <td><img src="https://image.eveonline.com/Type/{{order_item.item.item_id}}_32.png"
+                                            class="rounded"></td>
+                                    <td>{{order_item.item.item_name}}</td>
+                                    <td>{{order_item.quantity}}</td>
+                                    <td>{{order_item.item.price|format_number}}</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </td>
-                    <td style="vertical-align: middle;" >{{order.total_price|format_number}} ISK</td>
+                    <td style="vertical-align: middle;">{{order.total_price|format_number}} ISK</td>
                 </tr>
                 {% endfor %}
             </tbody>

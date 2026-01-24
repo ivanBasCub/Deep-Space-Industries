@@ -125,17 +125,28 @@ def update_order_data(order):
         return 1
     
     contracts = response.json()
-    
-    found = False
+
     for contract in contracts:
         if contract['title'] == order.order_id:
-            found = True
-            if order.status == 0:
-                order.status = 1
-            break
-        
-    if not found and order.status == 1:
-        order.status = 2
+            print(contract["status"])
+            match contract["status"]:
+                case "outstanding":
+                    order.status = 1
+                case "completed":
+                    order.status = 2
+                case "cancelled":
+                    order.status = 3
+                case "deleted":
+                    order.status = 4
+                case _:
+                    order.status = 0 
 
     order.save()
+    if order.status == 3 or order.status == 4:
+        list_items = order.order_items.all()
+        for item_order in list_items:
+            item = item_order.item
+            item.quantity += item_order.quantity
+            item.save()
+
     return 0

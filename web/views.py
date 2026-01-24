@@ -416,7 +416,7 @@ def program_calculator(request, program_id):
 @login_required(login_url="/")
 def shop(request):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    list_items = Item.objects.all()
+    list_items = Item.objects.all().exclude(quantity=0)
     cart = request.session.get("cart", {})
 
     if request.method == "POST":
@@ -507,7 +507,7 @@ def shop_items(request):
         return redirect("/dashboard/")
     
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    list_items = Item.objects.all()
+    list_items = Item.objects.all().exclude(quantity=0)
     
     return render(request, "shop/items/index.html",{
         "main": main,
@@ -618,12 +618,15 @@ def pending_orders(request):
 @login_required(login_url="/")
 def order_history(request):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    list_orders = Order.objects.filter(user=request.user).order_by('status')
+    list_orders = Order.objects.filter(user=request.user).order_by('created_at').reverse()
+    if request.user.groups.filter(name="Admin").exists() and request.path.endswith("/admin/"):
+        list_orders = Order.objects.all().order_by('created_at').reverse()
     
     total_value = 0
     pending_orders = 0
     pending_orders_value = 0
     for order in list_orders:
+        order.user.username = order.user.username.replace("_"," ")
         total_value += order.total_price()
         if order.status == 0:
             pending_orders += 1

@@ -5,7 +5,7 @@
 {% block style %}
 <link rel="stylesheet" href="{% static 'css/shop.css' %}">
 <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
-<title>Shop - Deep Space Industries</title>
+<title>Shop - Deep Space Industry</title>
 {% endblock %}
 
 {% block title %}
@@ -23,8 +23,13 @@ Shop
 <ul class="nav navbar-nav">
     {% if request.user|has_group:"Admin" %}
     <li class="nav-item py-0 ms-2">
+        <a href="/shop/orders/history/admin/" class="nav-link py-0">
+            <span class="btn btn-primary">View all Orders</span>
+        </a>
+    </li>
+    <li class="nav-item py-0 ms-2">
         <a href="/shop/orders/" class="nav-link py-0">
-            <span class="btn btn-primary">View Orders</span>
+            <span class="btn btn-primary">Pending Orders</span>
         </a>
     </li>
     <li class="nav-item py-0 ms-2">

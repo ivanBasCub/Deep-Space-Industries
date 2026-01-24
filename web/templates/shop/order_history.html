@@ -23,8 +23,13 @@ Shop Orders
 <ul class="nav navbar-nav">
     {% if request.user|has_group:"Admin" %}
     <li class="nav-item py-0 ms-2">
+        <a href="/shop/orders/history/admin/" class="nav-link py-0">
+            <span class="btn btn-primary">View all Orders</span>
+        </a>
+    </li>
+    <li class="nav-item py-0 ms-2">
         <a href="/shop/orders/" class="nav-link py-0">
-            <span class="btn btn-primary">View Orders</span>
+            <span class="btn btn-primary">Pending Orders</span>
         </a>
     </li>
     <li class="nav-item py-0 ms-2">
@@ -82,11 +87,13 @@ Shop Orders
                     <td style="vertical-align: middle;">{{order.user.username}}</td>
                     <td style="vertical-align: middle;">
                         {% if order.status == 0 %}
-                            <span class="btn btn-sm btn-danger">Pending</span>
+                            <span class="btn btn-sm btn-primary">Pending</span>
                         {% elif order.status == 1 %}
-                            <span class="btn btn-sm btn-warning">Processing</span>
+                            <span class="btn btn-sm btn-warning">In Progress</span>
                         {% elif order.status == 2 %}
                             <span class="btn btn-sm btn-success">Completed</span>
+                        {% elif order.status == 3 or order.status == 4 %}
+                            <span class="btn btn-sm btn-danger">Cancelled</span>
                         {% else %}
                             <span class="btn btn-sm btn-secondary">Unknown</span>
                         {% endif %}
