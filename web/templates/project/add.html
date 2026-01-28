@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>Projects - Deep Space Industry</title>
+{% endblock %}
+
+{% block title %}
+Add Materials
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav sub-nav">
+    {% if request.user|has_group:"Admin" %}
+    <li class="nav-item py ms-2">
+        <a href="/projects/add/" class="nav-link-py-0">
+            <span class="btn btn-primary">Create New Project</span>
+        </a>
+    </li>
+    <li class="nav-item py ms-2">
+        <a href="" class="nav-link-py-0">
+            <span class="btn btn-primary">Edit Projects</span>
+        </a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="card mx-auto col-12 col-md-6 col-lg-4">
+        <div class="card-header">
+            <h5 class="text-center m-0">Add New Project</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="project_name">Project Name</label>
+                    <input type="text" name="project_name" id="project_name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="project_description">Project Description</label>
+                    <textarea name="project_description" id="project_description" class="form-control" rows="3" style="resize: none;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="item_name">Item Name</label>
+                    <input type="text" name="item_name" id="item_name" class="form-control">
+                    <small class="form-text text-muted">Exact name as in the game.</small>
+                </div>
+                <div class="form-group">
+                    <label for="item_quantity">Item Quantity</label>
+                    <input type="number" name="item_quantity" id="item_quantity" class="form-control" min="1">
+                </div>
+                <button type="submit" class="btn btn-primary mt-3 w-100">
+                    Create Project
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

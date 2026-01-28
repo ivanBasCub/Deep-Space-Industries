@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>Projects - Deep Space Industry</title>
+{% endblock %}
+
+{% block title %}
+Edit Material
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav sub-nav">
+    {% if request.user|has_group:"Admin" %}
+    <li class="nav-item py ms-2">
+        <a href="" class="nav-link-py-0">
+            <span class="btn btn-primary">Create New Project</span>
+        </a>
+    </li>
+    <li class="nav-item py ms-2">
+        <a href="" class="nav-link-py-0">
+            <span class="btn btn-primary">Edit Projects</span>
+        </a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="card mx-auto col-12 col-md-6 col-lg-4">
+        <div class="card-header">
+            <h5 class="text-center m-0">Edit Material</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" name="quantity" id="quantity" class="form-control" min="1" value="{{material.quantity}}">
+                </div>
+                <button type="submit" class="btn btn-primary mt-3 w-100">
+                    Update Material
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

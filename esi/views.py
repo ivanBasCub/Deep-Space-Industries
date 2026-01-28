@@ -1,5 +1,6 @@
 from django.conf import settings
 from buyback.models import Manager
+from project.models import Project, Contract
 import requests
 
 # Function to get corporation and alliance info for a character
@@ -119,7 +120,7 @@ def update_order_data(order):
         "Authorization": f"Bearer {manager.access_token}"
     }
     
-    url = f"{settings.EVE_ESI_URL}/characters/{manager.character_id}/contracts/"
+    url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_name}/contracts/"
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         return 1
@@ -128,7 +129,6 @@ def update_order_data(order):
 
     for contract in contracts:
         if contract['title'] == order.order_id:
-            print(contract["status"])
             match contract["status"]:
                 case "outstanding":
                     order.status = 1
@@ -149,4 +149,87 @@ def update_order_data(order):
             item.quantity += item_order.quantity
             item.save()
 
+    return 0
+
+# Function to obtain the corporation assets
+def corp_assets(manager):
+    
+    headers = {
+        "Accept-Language": "",
+        "If-None-Match": "",
+        "X-Compatibility-Date": "2025-12-16",
+        "X-Tenant": "",
+        "If-Modified-Since": "",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {manager.access_token}"
+    }
+    
+    url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_id}/assets/"
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return []
+    
+    return response.json()
+
+# Function to obtain the project contract status
+def contract_project_status():
+    manager = Manager.objects.first()
+    headers = {
+        "Accept-Language": "",
+        "If-None-Match": "",
+        "X-Compatibility-Date": "2025-12-16",
+        "X-Tenant": "",
+        "If-Modified-Since": "",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {manager.access_token}"
+    }
+    
+    url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_id}/contracts/"
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return f"Error: {response.status_code}"
+
+    contracts = response.json()
+    
+    for contract in contracts:
+        data = contract["title"].split("-")
+        if len(data) != 4:
+            continue
+        project_id = int(data[1])
+        contract_type = int(data[2])
+        status = 0
+        project = Project.objects.filter(id=project_id).first()
+        if not project:
+            continue
+        print(contract["status"])
+        match contract["status"]:
+            case "outstanding":
+                status = 1
+            case "finished":
+                status = 2
+            case "cancelled":
+                status = 3
+            case "deleted":
+                status = 4
+            case _:
+                status = 0
+        
+        print(status)
+        project = Project.objects.get(id=project_id)
+        contractBBDD, created = Contract.objects.get_or_create(
+            project = project,
+            contract_id = contract["title"],
+            defaults={
+                "contract_type": contract_type,
+                "status": status,
+                "value": contract["price"]
+            }
+        )
+        
+        if not created:
+            contractBBDD.status = status
+            contractBBDD.value = contract["price"]
+            contractBBDD.save()
+    
     return 0

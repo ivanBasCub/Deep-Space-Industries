@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from sso.models import CharacterEve
 from buyback.models import BuyBackProgram, ProgramSpecialTax, Location, BuyBackServices, Manager
+from project.models import Project, Item as ProjectItem, Product, MaterialProject, Contract
 from shop.models import Item, ItemsOrder, Order
 from esi.views import structure_data, item_data_id, apprisal_data
 import random
@@ -639,3 +640,187 @@ def order_history(request):
         "pending_orders": pending_orders,
         "pending_orders_value": pending_orders_value
     })
+    
+## PROJECTS
+# View List of Projects
+@login_required(login_url="/")
+def list_projects(request):    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_projects = Project.objects.all().order_by('created_at').reverse()
+    
+    return render(request,"project/list.html",{
+        "main": main,
+        "list_projects": list_projects
+    })
+
+# View Project Detail
+@login_required(login_url="/")
+def project_detail(request, project_id):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    project = get_object_or_404(Project, id=project_id)
+    
+    return render(request,"project/detail.html",{
+        "main": main,
+        "project": project
+    })
+    
+# Add Project
+@login_required(login_url="/")
+def add_project(request):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    
+    if request.method == "POST":
+        project_name = request.POST.get("project_name")
+        project_description = request.POST.get("project_description")
+        item_name = request.POST.get("item_name")
+        quantity = int(request.POST.get("item_quantity") or 0)
+        
+        data = apprisal_data(items=item_name)
+        item, _ = ProjectItem.objects.get_or_create(
+            eve_id = data["items"][0]["itemType"]["eid"],
+            defaults={
+                "name": item_name,
+                "jita_price": data["items"][0]["effectivePrices"]["sellPrice"] / 100,
+                "volume": data["items"][0]["totalVolume"]
+            }
+        )
+
+        project = Project.objects.create(
+            name = project_name,
+            description = project_description,
+            status = 0
+        )
+        
+        Product.objects.create(
+            project = project,
+            item = item,
+            quantity = quantity
+        )
+        
+        return redirect("/projects/")
+    
+    return render(request,"project/add.html",{
+        "main": main
+    })
+
+# View Project
+@login_required(login_url="/")
+def view_project(request, project_id):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    project = get_object_or_404(Project, id=project_id)
+    list_materials = MaterialProject.objects.filter(project=project)
+    list_contracts = Contract.objects.filter(project=project)
+    characters = string.ascii_letters + string.digits
+    
+    materials_id = f"{''.join(random.choices(characters, k=9))}-{project.id}-1-{''.join(random.choices(characters, k=9))}"
+    economic_id = f"{''.join(random.choices(characters, k=9))}-{project.id}-2-{''.join(random.choices(characters, k=9))}"
+    
+    material_total_cost = 0
+    contract_total_cost = 0
+    total_cost = 0
+    for material in list_materials:
+        material_total_cost += material.total_price_needed()
+        print(material.obtained)
+        
+    for contract in list_contracts:
+        if contract.status in [1, 2]:
+            contract_total_cost += contract.value
+    
+    total_cost = material_total_cost + contract_total_cost
+    
+    return render(request,"project/view.html",{
+        "main": main,
+        "project": project,
+        "list_materials": list_materials,
+        "material_total_cost": material_total_cost,
+        "contract_total_cost": contract_total_cost,
+        "total_cost": total_cost,
+        "materials_id": materials_id,
+        "economic_id": economic_id
+    })
+    
+# List Porjects Admin
+@login_required(login_url="/")
+def admin_projects(request):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_projects = Project.objects.all().order_by('created_at').reverse()
+    
+    return render(request,"project/admin/projects.html",{
+        "main": main,
+        "list_projects": list_projects
+    })
+
+# Add Material to Project
+@login_required(login_url="/")
+def add_material_project(request, project_id):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    project = get_object_or_404(Project, id=project_id)
+    
+    if request.method == "POST":
+        materials = request.POST.get("materials") 
+        data = apprisal_data(items=materials)
+        
+        for item in data["items"]:
+            pItem, _ = ProjectItem.objects.get_or_create(
+                eve_id = item["itemType"]["eid"],
+                defaults={
+                    "name": item["itemType"]["name"],
+                    "jita_price": item["effectivePrices"]["sellPrice"] / 100,
+                    "volume": item["totalVolume"]
+                }
+            )
+            
+            MaterialProject.objects.get_or_create(
+                project = project,
+                item = pItem,
+                defaults={
+                    "quantity": item["amount"]
+                }
+            )
+
+        return redirect(f"/projects/{project_id}/view/")
+    
+    return render(request, "project/materials/add.html",{
+        "main": main,
+        "project": project
+    })
+    
+# Edit Material in Project
+@login_required(login_url="/")
+def edit_material_project(request, project_id, material_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    project = get_object_or_404(Project, id=project_id)
+    material = get_object_or_404(MaterialProject, id=material_id)
+    
+    if request.method == "POST":
+        quantity = int(request.POST.get("quantity") or 0)
+        material.quantity = quantity
+        material.save()
+        
+        return redirect(f"/projects/{project_id}/view/")
+    
+    return render(request, "project/materials/edit.html",{
+        "main": main,
+        "project": project,
+        "material": material
+    })
+    
+# Remove Material from Project
+@login_required(login_url="/")
+def del_material_project(request, project_id, material_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    material = get_object_or_404(MaterialProject, id=material_id)
+
+    try:
+        material.delete()
+    except MaterialProject.DoesNotExist:
+        pass
+    
+    return redirect(f"/projects/{project_id}/view/")

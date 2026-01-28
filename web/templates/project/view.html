@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>{{project.name}} - Deep Space Industry</title>
+{% endblock %}
+
+{% block title %}
+{{project.name}}
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav sub-nav">
+    {% if request.user|has_group:"Admin" %}
+    <li class="nav-item py ms-2">
+        <a href="/projects/{{project.id}}/finish/" class="nav-link-py-0 {% if project.status != 0 %}disabled{% endif %}">
+            <span class="btn btn-info text-dark">Finish Project</span>
+        </a>
+    </li>
+    <li class="nav-item py ms-2">
+        <a href="/projects/{{project.id}}/edit/" class="nav-link-py-0 {% if project.status != 0 %}disabled{% endif %}">
+            <span class="btn btn-warning text-dark">
+                <i class="bi bi-pencil"></i>
+            </span>
+        </a>
+    </li>
+    <li class="nav-item py ms-2">
+        <a href="/projects/{{project.id}}/del/" class="nav-link-py-0">
+            <span class="btn btn-danger">
+                <i class="bi bi-trash"></i>
+            </span>
+        </a>
+    </li>
+    
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="container-fluid m-0 p-0">
+        <div class="d-flex flex-wrap justify-content-between">
+            <div class="card col-12 col-md-7">
+                <div class="card-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="m-0">{{project.name}}</h5>
+                        <h6 class="m-0 p-0">Status: {% if project.status == 0 %} Active {% else %} Inactive {% endif %}
+                        </h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-9">
+                            <h6 class="m-0 p-0">Description</h6>
+                            <p class="card-text">{{project.description}}</p>
+                            <h6 class="m-0 p-0">Goal</h6>
+                            <p class="card-text">Create {{project.product.first.quantity}}
+                                {{project.product.first.item.name}}</p>
+                            <h6 class="m-0 p-0">Contract ID (Materials)</h6>
+                            <p class="card-text">{{materials_id}}</p>
+                            <h6 class="m-0 p-0">Contract ID (Economic expenditure)</h6>
+                            <p class="card-text">{{economic_id}}</p>
+                        </div>
+                        <div class="col-3 d-flex align-items-start justify-content-end">
+                            <img src="https://image.eveonline.com/Type/{{ project.product.first.item.eve_id }}_64.png"
+                                class="rounded img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card col-12 col-md-4">
+                <div class="card-header">
+                    Project Financials
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success" style="-webkit-animation: progress-bar-stripes 2s linear infinite;
+                                    animation: progress-bar-stripes 2s linear infinite;
+                                    animation-direction: alternate;
+                                    background-image: linear-gradient(
+                                        45deg,
+                                        rgba(40, 167, 69, 0.15) 25%,   /* Verde Bootstrap success */
+                                        transparent 25%,
+                                        transparent 50%,
+                                        rgba(40, 167, 69, 0.15) 50%,
+                                        rgba(40, 167, 69, 0.15) 75%,
+                                        transparent 75%,
+                                        transparent 50%
+                                    );
+                                    background-size: 40px 40px;">
+                        <p class="text-start m-0 p-0">Product Jita Sell Price:</p>
+                        <h6 class="text-end m-0 p-0">{{project.product.first.total_price|format_number}}
+                            <strong>ISK</strong>
+                        </h6>
+                    </div>
+                    <div class="d-flex flex-wrap justify-content-between">
+                        <div class="alert alert-warning col-12 col-lg-6" style="-webkit-animation: progress-bar-stripes 2s linear infinite;
+                            animation: progress-bar-stripes 2s linear infinite;
+                            animation-direction: alternate;
+                            background-image: linear-gradient(
+                                45deg,
+                                rgba(255, 193, 7, 0.25) 25%,   /* warning */
+                                transparent 25%,
+                                transparent 50%,
+                                rgba(255, 193, 7, 0.25) 50%,
+                                rgba(255, 193, 7, 0.25) 75%,
+                                transparent 75%,
+                                transparent 50%
+                            );
+                            background-size: 40px 40px;">
+                            <p class="text-start m-0 p-0">Materials Jita Sell Price:</p>
+                            <h6 class="text-end m-0 p-0"> {{material_total_cost|format_number}} <strong>ISK</strong>
+                            </h6>
+                        </div>
+                        <div class="alert alert-warning col-12 col-lg-6" style="-webkit-animation: progress-bar-stripes 2s linear infinite;
+                            animation: progress-bar-stripes 2s linear infinite;
+                            animation-direction: alternate;
+                            background-image: linear-gradient(
+                                45deg,
+                                rgba(255, 193, 7, 0.25) 25%,   /* warning */
+                                transparent 25%,
+                                transparent 50%,
+                                rgba(255, 193, 7, 0.25) 50%,
+                                rgba(255, 193, 7, 0.25) 75%,
+                                transparent 75%,
+                                transparent 50%
+                            );
+                            background-size: 40px 40px;">
+                            <p class="text-start m-0 p-0">Other costs:</p>
+                            <h6 class="text-end m-0 p-0"> {{contract_total_cost|format_number}} <strong>ISK</strong>
+                            </h6>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger" style="-webkit-animation: progress-bar-stripes 2s linear infinite;
+                                    animation: progress-bar-stripes 2s linear infinite;
+                                    animation-direction: alternate;
+                                    background-image: linear-gradient(
+                                        45deg,
+                                        rgba(255, 50, 50, 0.15) 25%,
+                                        transparent 25%,
+                                        transparent 50%,
+                                        rgba(255, 50, 50, 0.15) 50%,
+                                        rgba(255, 50, 50, 0.15) 75%,
+                                        transparent 75%,
+                                        transparent 50%
+                                    );
+                                    background-size: 40px 40px">
+                        <p class="text-start m-0 p-0">Total Cost:</p>
+                        <h6 class="text-end m-0 p-0"> {{total_cost|format_number}} <strong>ISK</strong></h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <span style="vertical-align: middle;">Materials Required</span>
+            {% if request.user|has_group:"Admin" %}
+            <div class="float-end">
+                <a href="/projects/{{ project.id }}/material/add/" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <table style="width: 100%; margin: auto;" class="table table-striped table-hover no-footer w-100">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Item Name</th>
+                    <th>Materials (Obtained/Required)</th>
+                    <th>Jita Price Needed</th>
+                    <th>Jita Price</th>
+                    <th>Status</th>
+                    {% if request.user|has_group:"Admin" %}
+                    <th>Actions</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in project.materials.all %}
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <img src="https://image.eveonline.com/Type/{{ material.item.eve_id }}_32.png"
+                            class="rounded img-fluid">
+                    </td>
+                    <td style="vertical-align: middle;">{{material.item.name}}</td>
+                    <td style="vertical-align: middle;">{{material.obtained}} / {{material.quantity}}</td>
+                    <td style="vertical-align: middle;">{{material.total_price_needed|format_number}} ISK</td>
+                    <td style="vertical-align: middle;">{{material.total_price|format_number}} ISK</td>
+                    <td style="vertical-align: middle;">
+                        {% if material.obtained >= material.quantity %}
+                        <span class="badge bg-success">Completed</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">In Progress</span>
+                        {% endif %}
+                    </td>
+                    {% if request.user|has_group:"Admin" %}
+                    <td>
+                        <a href="/projects/{{ project.id }}/material/{{ material.id }}/edit/"
+                            class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="/projects/{{ project.id }}/material/{{ material.id }}/del/"
+                            class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">Contracts Info</div>
+        <table style="width: 100%; margin: auto;" class="table table-striped table-hover no-footer w-100">
+            <thead>
+                <tr>
+                    <th>Contract Id</th>
+                    <th>Type of expense</th>
+                    <th>ISK</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contract in project.contracts.all %}
+                <tr>
+                    <td>{{contract.contract_id}}</td>
+                    <td>{% if contract.contract_type == 1 %} Materials costs {% else %} Economic expenditure {% endif %}</td>
+                    <td>{{contract.value|format_number}} ISK</td>
+                    <td>
+                        {% if contract.status == 0 %}
+                            <span class="badge btn btn-sm btn-primary">Pending</span>
+                        {% elif contract.status == 1 %}
+                            <span class="badge btn btn-sm btn-warning text-dark">In Progress</span>
+                        {% elif contract.status == 2 %}
+                            <span class="badge btn btn-sm btn-success">Completed</span>
+                        {% elif contract.status == 3 or contract.status == 4 %}
+                            <span class="badge btn btn-sm btn-danger">Cancelled</span>
+                        {% else %}
+                            <span class="badge btn btn-sm btn-secondary">Unknown</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

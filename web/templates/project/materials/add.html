@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>{{project.name}} - Deep Space Industry</title>
+{% endblock %}
+
+{% block title %}
+{{project.name}}
+{% endblock %}
+
+{% block navbar_menu %}
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="card col-12 col-md-8 mx-auto">
+        <div class="card-header">Add Materials Required</div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="from-group">
+                    <label for="materials">Materials list</label>
+                    <textarea name="materials" id="materials" rows="5" style="resize: none;" class="form-control"></textarea>
+                    <small class="form-text text-muted">Same format as requested in https://janice.e-351.com/</small>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3 w-100">
+                    Add Materials
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -53,5 +53,13 @@ urlpatterns = [
     path('shop/items/add/', web_views.add_shop_items, name="add_shop_items"),
     path('shop/items/<int:item_id>/edit/', web_views.edit_shop_items, name="edit_shop_items"),
     path('shop/items/<int:item_id>/del/',web_views.remove_item_shop, name="del_item"),
-    path('cart/<int:item_id>/del/', web_views.remove_from_cart, name="del_cart_item")
+    path('cart/<int:item_id>/del/', web_views.remove_from_cart, name="del_cart_item"),
+    # Projects
+    path('projects/', web_views.list_projects, name="projects"),
+    path('projects/admin/', web_views.admin_projects, name="admin_projects"),
+    path('projects/add/', web_views.add_project, name="add_project"),
+    path('projects/<int:project_id>/view/', web_views.view_project, name="view_project"),
+    path('projects/<int:project_id>/material/add/', web_views.add_material_project, name="add_material_to_project"),
+    path('projects/<int:project_id>/material/<int:material_id>/edit/', web_views.edit_material_project, name="edit_material_of_project"),
+    path('projects/<int:project_id>/material/<int:material_id>/del/', web_views.del_material_project, name="del_material_of_project"),
 ]

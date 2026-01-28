@@ -15,9 +15,19 @@ app.conf.beat_schedule = {
     },
     'check_orders':{
         'task':'shop.tasks.check_order_status',
-        'schedule': 60,
+        'schedule': 300,
         'args':()
-    }
+    },
+    'update_materials':{
+        'task':'project.tasks.update_materials',
+        'schedule': 900,
+        'args':()
+    },
+    'update_project_contracts':{
+        'task':'project.tasks.update_project_contracts',
+        'schedule': 300,
+        'args':()
+    },
 }
 
 app.conf.timezone = 'Europe/Madrid'

@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'sso',
     'esi',
     'buyback',
-    'shop'
+    'shop',
+    'project'
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>Projects - Deep Space Industry</title>
+{% endblock %}
+
+{% block title %}
+Projects
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav sub-nav">
+    {% if request.user|has_group:"Admin" %}
+    <li class="nav-item py ms-2">
+        <a href="/projects/add/" class="nav-link-py-0">
+            <span class="btn btn-primary">Create New Project</span>
+        </a>
+    </li>
+    <li class="nav-item py ms-2">
+        <a href="/projects/admin/" class="nav-link-py-0">
+            <span class="btn btn-primary">Edit Projects</span>
+        </a>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="container-fluid m-0 p-0">
+        <div class="d-flex flex-wrap justify-content-start align-items-start">
+            <div class="container-fluid m-0 p-0 col-12 col-md-6">
+                <div class="card col-12">
+                    <div class="card-header">
+                        <h5 class="text-center m-0">Active Projects</h5>
+                    </div>
+                </div>
+                <div class="container-fluid m-0 p-0 col-12">
+                    <div class="d-flex-flex-wrap-justify-content-start">
+                        {% for project in list_projects %}
+                        {% if project.status == 0 %}
+                        <div class="card my-1 col-12">
+                            <div class="card-header text-center">
+                                {{project.name}}
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-start">
+                                    {% with prod=project.product.first %}
+                                        {% if prod %}
+                                            <img src="https://image.eveonline.com/Type/{{ prod.item.eve_id }}_64.png"
+                                                class="rounded">
+                                            <div class="container">
+                                                <h6 class="p-0 m-0">Description</h6>
+                                                <p class="card-text text-muted">{{project.description}}</p>
+                                            </div>
+                                            <div class="container">
+                                                <h6 class="m-0 p-0">Objective</h6>
+                                                <p class="card-text text-muted">{{ prod.item.name }} {{ prod.quantity }}</p>
+                                            </div>
+                                        {% else %}
+                                            <p>Este proyecto no tiene producto asociado.</p>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="/projects/{{project.id}}/view/" class="btn btn-success w-100">
+                                    View Project
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+            <div class="container-fluid m-0 p-0 col-12 col-md-6">
+                <div class="card col-12">
+                    <div class="card-header">
+                        <h5 class="text-center m-0">Finished Projects</h5>
+                    </div>
+                </div>
+                <div class="container-fluid m-0 p-0 col-12">
+                    <div class="d-flex-flex-wrap-justify-content-start">
+                        {% for project in list_projects %}
+                        {% if project.status == 1 %}
+                        <div class="card my-1 col-12">
+                            <div class="card-header text-center">
+                                {{project.name}}
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-start">
+                                    {% with prod=project.product.first %}
+                                        {% if prod %}
+                                            <img src="https://image.eveonline.com/Type/{{ prod.item.eve_id }}_64.png"
+                                                class="rounded">
+                                            <div class="container">
+                                                <h6 class="p-0 m-0">Description</h6>
+                                                <p class="card-text text-muted">{{project.description}}</p>
+                                            </div>
+                                            <div class="container">
+                                                <h6 class="m-0 p-0">Objective</h6>
+                                                <p class="card-text text-muted">{{ prod.item.name }} {{ prod.quantity }}</p>
+                                            </div>
+                                        {% else %}
+                                            <p>Este proyecto no tiene producto asociado.</p>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <a href="/projects/{{project.id}}/view/" class="btn btn-success w-100">
+                                    View Project
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
