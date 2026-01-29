@@ -28,6 +28,11 @@ app.conf.beat_schedule = {
         'schedule': 300,
         'args':()
     },
+    'update_item_price':{
+        'task':'project.tasks.update_item_price',
+        'schedule': 3600,
+        'args':()
+    }
 }
 
 app.conf.timezone = 'Europe/Madrid'

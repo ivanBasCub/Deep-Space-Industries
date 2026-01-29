@@ -24,7 +24,11 @@ def dashboard(request):
         'list_characters': list_characters
     })
 
-# BUY BACK PROGRAMS 
+# BUYBACK FEATURES VIEWS
+
+## User View
+
+### List buyback programs
 @login_required(login_url='/') 
 def buyback_program(request):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -43,7 +47,153 @@ def buyback_program(request):
         'programs': programs
     })
 
-## Add program
+### View Buyback program Special Taxes
+@login_required(login_url="/")
+def special_taxes(request, program_id):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    program = BuyBackProgram.objects.get(id = program_id)
+    list_special_taxes = ProgramSpecialTax.objects.filter(program=program).all()
+    
+    for item in list_special_taxes:
+        item.total_tax = program.tax + item.special_tax
+    
+    return render(request, 'buyback/special_taxes/index.html',{
+        'main':main,
+        "program" : program,
+        "special_taxes": list_special_taxes
+    })
+
+# View Contract Calculator
+@login_required(login_url="/")
+def program_calculator(request, program_id):
+    # View Classes
+    class Item():
+        def __init__(self,item_id, item_name, amount, buy_price, sell_price, item_tax, is_allowed, final_price, total, tax_difference):
+            self.item_id = item_id
+            self.item_name = item_name
+            self.amount = amount
+            self.buy_price = buy_price
+            self.sell_price = sell_price
+            self.item_tax = item_tax
+            self.is_allowed = is_allowed
+            self.final_price = final_price
+            self.total = total
+            self.tax_difference = tax_difference
+    
+    class Contract():
+        def __init__(self, contract_id, raw_price, total_volume, general_tax, freigther_tax, donation_tax, net_price):
+            self.contract_id = contract_id
+            self.raw_price = raw_price
+            self.total_volume = total_volume
+            self.general_tax = general_tax
+            self.freigther_tax = freigther_tax
+            self.donation_tax = donation_tax
+            self.net_price = net_price
+            
+    # Obtain data for the database
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    program = BuyBackProgram.objects.get(id = program_id)
+    program.jita_buy = program.settings.filter(name="Jita Buy").exists()
+    program.all_items = program.settings.filter(name="All Items").exists()
+    program.freighter = program.settings.filter(name="Freight").exists()
+    
+    if request.method == "POST":
+        items = request.POST.get("items")
+        donation = int(request.POST.get("donation"))
+        
+        data = apprisal_data(items, program)
+
+        characters = string.ascii_letters + string.digits 
+        contract_id = f"{program.id}-{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}"
+
+        total_volume = data["totalPackagedVolume"]
+        raw_price=0
+
+        list_items = []
+        for janice_item in data["items"]:
+            special_item = ProgramSpecialTax.objects.filter(item_id=janice_item["itemType"]["eid"]).first()
+
+            buy = janice_item["effectivePrices"]["buyPrice"] / 100
+            sell = janice_item["effectivePrices"]["sellPrice"] / 100
+            tax = program.tax
+            allowed = True
+            tax_difference = 0
+            if special_item:
+                allowed = special_item.is_allowed
+                if allowed:
+                    tax_difference = special_item.special_tax
+                tax += special_item.special_tax
+            elif not program.all_items:
+                buy = 0
+                sell = 0
+                tax = 0
+                allowed = False
+
+            if allowed:
+                if program.jita_buy:
+                    raw_price += buy * janice_item["amount"]
+                else:
+                    raw_price += sell * janice_item["amount"]
+
+            final_price = buy if program.jita_buy else sell
+            final_price -= final_price * (tax / 100)
+
+            item = Item(
+                item_id=janice_item["itemType"]["eid"],
+                item_name=janice_item["itemType"]["name"],
+                amount=janice_item["amount"],
+                buy_price=buy,
+                sell_price=sell,
+                item_tax=tax,
+                is_allowed=allowed,
+                final_price=final_price,
+                total=final_price * janice_item["amount"],
+                tax_difference=tax_difference
+            )
+
+            list_items.append(item)
+    
+        total_price = 0
+        freighter_tax = 0
+        donation_tax = 0
+        
+        for item in list_items:
+            total_price = total_price + item.total
+            
+        if program.freighter_tax != 0:
+            freighter_tax = total_volume * program.freighter_tax
+            
+        if donation != 0:
+            donation_tax = total_price * (donation / 100)
+            
+        net_price = (total_price - donation_tax) + freighter_tax
+        
+        contract = Contract(
+            contract_id=contract_id,
+            raw_price= raw_price,
+            total_volume= total_volume,
+            general_tax= raw_price - total_price,
+            freigther_tax=freighter_tax,
+            donation_tax=donation_tax,
+            net_price=net_price
+        )
+        
+        return render(request,"buyback/calculate.html",{
+            "main":main,
+            "program": program,
+            "donation": donation,
+            "list_items": list_items,
+            "contract": contract
+        })
+        
+    return render(request,"buyback/calculate.html",{
+        "main":main,
+        "program": program
+    })
+
+## Admin View
+
+### Add buyback program
 @login_required(login_url="/")
 def add_buyback_program(request):
     print(request.user.groups.all())
@@ -95,7 +245,7 @@ def add_buyback_program(request):
         "base_prices" : base_price
     })
 
-# Edit Program
+### Edit buyback program
 @login_required(login_url="/")
 def edit_buyback_program(request, program_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -136,7 +286,7 @@ def edit_buyback_program(request, program_id):
         "base_prices" : base_price
     })
 
-# Del program
+### Del buyback program
 @login_required(login_url="/")
 def del_buyback_program(request, program_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -152,24 +302,9 @@ def del_buyback_program(request, program_id):
     
     return redirect("/buybackprogram/")
 
-# SPECIAL TAXES
-## Index
-@login_required(login_url="/")
-def special_taxes(request, program_id):
-    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    program = BuyBackProgram.objects.get(id = program_id)
-    list_special_taxes = ProgramSpecialTax.objects.filter(program=program).all()
-    
-    for item in list_special_taxes:
-        item.total_tax = program.tax + item.special_tax
-    
-    return render(request, 'buyback/special_taxes/index.html',{
-        'main':main,
-        "program" : program,
-        "special_taxes": list_special_taxes
-    })
+### Configure Special taxes in a buyback program
 
-## Add
+#### Add Special Tax to a program
 @login_required(login_url="/")
 def add_special_taxes(request, program_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -206,8 +341,23 @@ def add_special_taxes(request, program_id):
         'program':program
     })
 
-# LOCATIONS
-## Index
+#### Del special tax
+@login_required(login_url="/")
+def del_special_tax(request, program_id, special_tax_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    try:
+        special_tax = ProgramSpecialTax.objects.get(id=special_tax_id)
+        special_tax.delete()
+    except ProgramSpecialTax.DoesNotExist:
+        pass
+    
+    return redirect(f"/buybackprogram/{program_id}/special_taxes/")
+
+### Configure locations
+
+#### View list of locations
 @login_required(login_url='/')
 def locations(request):
     if not request.user.groups.filter(name="Admin").exists():
@@ -221,7 +371,7 @@ def locations(request):
         "locations": list_locations
     })
 
-## Add location to the database
+#### Add new locations
 @login_required(login_url="/")
 def add_location(request):
     if not request.user.groups.filter(name="Admin").exists():
@@ -253,20 +403,7 @@ def add_location(request):
         "main": main
     })
 
-@login_required(login_url="/")
-def del_special_tax(request, program_id, special_tax_id):
-    if not request.user.groups.filter(name="Admin").exists():
-        return redirect("/dashboard/")
-    
-    try:
-        special_tax = ProgramSpecialTax.objects.get(id=special_tax_id)
-        special_tax.delete()
-    except ProgramSpecialTax.DoesNotExist:
-        pass
-    
-    return redirect(f"/buybackprogram/{program_id}/special_taxes/")
-    
-## Remove location to the database    
+#### Del location   
 @login_required(login_url="/")
 def del_location(request, structure_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -279,141 +416,12 @@ def del_location(request, structure_id):
         pass
     
     return redirect("/locations/")
-    
-# Contract Calculator
-@login_required(login_url="/")
-def program_calculator(request, program_id):
-    # View Classes
-    class Item():
-        def __init__(self,item_id, item_name, amount, buy_price, sell_price, item_tax, is_allowed, final_price, total, tax_difference):
-            self.item_id = item_id
-            self.item_name = item_name
-            self.amount = amount
-            self.buy_price = buy_price
-            self.sell_price = sell_price
-            self.item_tax = item_tax
-            self.is_allowed = is_allowed
-            self.final_price = final_price
-            self.total = total
-            self.tax_difference = tax_difference
-    
-    class Contract():
-        def __init__(self, contract_id, raw_price, total_volume, general_tax, freigther_tax, donation_tax, net_price):
-            self.contract_id = contract_id
-            self.raw_price = raw_price
-            self.total_volume = total_volume
-            self.general_tax = general_tax
-            self.freigther_tax = freigther_tax
-            self.donation_tax = donation_tax
-            self.net_price = net_price
-            
-    # Obtain data for the database
-    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    program = BuyBackProgram.objects.get(id = program_id)
-    program.jita_buy = program.settings.filter(name="Jita Buy").exists()
-    program.all_items = program.settings.filter(name="All Items").exists()
-    program.freighter = program.settings.filter(name="Freight").exists()
-    
-    
-    if request.method == "POST":
-        items = request.POST.get("items")
-        donation = int(request.POST.get("donation"))
-        
-        data = apprisal_data(items, program)
-        
-        # Contract Id
-        characters = string.ascii_letters + string.digits 
-        contract_id = f"{program.id}-{''.join(random.choices(characters, k=8))}-{''.join(random.choices(characters, k=8))}"
-        
-        # General Contract Data
-        total_volume = data["totalPackagedVolume"]
-        raw_price=0
+ 
+# SHOP FEATURE VIEWS
 
-        list_items = []
-        
-        for janice_item in data["items"]:
-            special_item = ProgramSpecialTax.objects.filter(item_id=janice_item["itemType"]["eid"]).first()
+## User views
 
-            buy = janice_item["effectivePrices"]["buyPrice"] / 100
-            sell = janice_item["effectivePrices"]["sellPrice"] / 100
-            tax = program.tax
-            allowed = True
-            tax_difference = 0
-            if special_item:
-                allowed = special_item.is_allowed
-                if allowed:
-                    tax_difference = special_item.special_tax
-                tax += special_item.special_tax
-            elif not program.all_items:
-                buy = 0
-                sell = 0
-                tax = 0
-                allowed = False
-
-            if allowed:
-                if program.jita_buy:
-                    raw_price += buy * janice_item["amount"]
-                else:
-                    raw_price += sell * janice_item["amount"]
-
-            final_price = buy if program.jita_buy else sell
-            final_price -= final_price * (tax / 100)
-
-            item = Item(
-                item_id=janice_item["itemType"]["eid"],
-                item_name=janice_item["itemType"]["name"],
-                amount=janice_item["amount"],
-                buy_price=buy,
-                sell_price=sell,
-                item_tax=tax,
-                is_allowed=allowed,
-                final_price=final_price,
-                total=final_price * janice_item["amount"],
-                tax_difference=tax_difference
-            )
-
-            list_items.append(item)
-
-            
-        total_price = 0
-        freighter_tax = 0
-        donation_tax = 0
-        
-        for item in list_items:
-            total_price = total_price + item.total
-            
-        if program.freighter_tax != 0:
-            freighter_tax = total_volume * program.freighter_tax
-            
-        if donation != 0:
-            donation_tax = total_price * (donation / 100)
-            
-        net_price = (total_price - donation_tax) + freighter_tax
-        
-        contract = Contract(
-            contract_id=contract_id,
-            raw_price= raw_price,
-            total_volume= total_volume,
-            general_tax= raw_price - total_price,
-            freigther_tax=freighter_tax,
-            donation_tax=donation_tax,
-            net_price=net_price
-        )
-        
-        return render(request,"buyback/calculate.html",{
-            "main":main,
-            "program": program,
-            "donation": donation,
-            "list_items": list_items,
-            "contract": contract
-        })
-        
-    return render(request,"buyback/calculate.html",{
-        "main":main,
-        "program": program
-    })
-    
-## SHOP
+### Shop view
 @login_required(login_url="/")
 def shop(request):
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
@@ -458,7 +466,7 @@ def shop(request):
         "total": total,
     })
 
-# Remove item from the cart
+### Remove item from the cart
 @login_required(login_url="/")
 def remove_from_cart(request, item_id):
     cart = request.session.get("cart", {})
@@ -469,7 +477,7 @@ def remove_from_cart(request, item_id):
 
     return redirect("/shop/")
 
-# Confirm the order
+### Confirm the order
 @login_required(login_url="/")
 def confirm_order(request):
     order = Order.objects.create(
@@ -501,7 +509,35 @@ def confirm_order(request):
     messages.success(request, "Your order has been successfully created")
     return redirect("/shop/")
 
-# View Item Sell Orders
+### View Order History User
+@login_required(login_url="/")
+def order_history(request):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_orders = Order.objects.filter(user=request.user).order_by('created_at').reverse()
+    if request.user.groups.filter(name="Admin").exists() and request.path.endswith("/admin/"):
+        list_orders = Order.objects.all().order_by('created_at').reverse()
+    
+    total_value = 0
+    pending_orders = 0
+    pending_orders_value = 0
+    for order in list_orders:
+        order.user.username = order.user.username.replace("_"," ")
+        total_value += order.total_price()
+        if order.status == 0:
+            pending_orders += 1
+            pending_orders_value += order.total_price()
+    
+    return render(request, "shop/order_history.html",{
+        "main": main,
+        "list_orders": list_orders,
+        "total_value": total_value,
+        "pending_orders": pending_orders,
+        "pending_orders_value": pending_orders_value
+    })
+
+## Admin View
+
+### View Item Sell Orders
 @login_required(login_url="/")
 def shop_items(request):
     if not request.user.groups.filter(name="Admin").exists():
@@ -515,7 +551,7 @@ def shop_items(request):
         "list_items": list_items,
     })
 
-# Add Item Sell Order
+### Add Item Sell Order
 @login_required(login_url="/")
 def add_shop_items(request):
     if not request.user.groups.filter(name="Admin").exists():
@@ -546,7 +582,7 @@ def add_shop_items(request):
         "status":0
     })
 
-# Edit Item Sell Order
+### Edit Item Sell Order
 @login_required(login_url="/")
 def edit_shop_items(request, item_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -578,7 +614,7 @@ def edit_shop_items(request, item_id):
         "status": 1 
     })
 
-# Remove Item Sell Order
+### Remove Item Sell Order
 @login_required(login_url="/")
 def remove_item_shop(request, item_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -598,7 +634,7 @@ def remove_item_shop(request, item_id):
     
     return redirect("/shop/items/")
 
-# View Pending Orders
+### View Pending Orders
 @login_required(login_url="/")
 def pending_orders(request):
     if not request.user.groups.filter(name="Admin").exists():
@@ -614,37 +650,17 @@ def pending_orders(request):
         "main": main,
         "list_orders": list_orders
     })
-    
-# View Order History User
+
+# PROJECTS Feature View
+
+## User View
+
+### View List of Projects
 @login_required(login_url="/")
-def order_history(request):
-    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    list_orders = Order.objects.filter(user=request.user).order_by('created_at').reverse()
-    if request.user.groups.filter(name="Admin").exists() and request.path.endswith("/admin/"):
-        list_orders = Order.objects.all().order_by('created_at').reverse()
-    
-    total_value = 0
-    pending_orders = 0
-    pending_orders_value = 0
-    for order in list_orders:
-        order.user.username = order.user.username.replace("_"," ")
-        total_value += order.total_price()
-        if order.status == 0:
-            pending_orders += 1
-            pending_orders_value += order.total_price()
-    
-    return render(request, "shop/order_history.html",{
-        "main": main,
-        "list_orders": list_orders,
-        "total_value": total_value,
-        "pending_orders": pending_orders,
-        "pending_orders_value": pending_orders_value
-    })
-    
-## PROJECTS
-# View List of Projects
-@login_required(login_url="/")
-def list_projects(request):    
+def list_projects(request):
+    if not request.user.groups.filter(name__in=["Admin","Industry"]).exists():
+        return redirect("/dashboard/")
+        
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     list_projects = Project.objects.all().order_by('created_at').reverse()
     
@@ -653,59 +669,12 @@ def list_projects(request):
         "list_projects": list_projects
     })
 
-# View Project Detail
-@login_required(login_url="/")
-def project_detail(request, project_id):
-    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    project = get_object_or_404(Project, id=project_id)
-    
-    return render(request,"project/detail.html",{
-        "main": main,
-        "project": project
-    })
-    
-# Add Project
-@login_required(login_url="/")
-def add_project(request):
-    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
-    
-    if request.method == "POST":
-        project_name = request.POST.get("project_name")
-        project_description = request.POST.get("project_description")
-        item_name = request.POST.get("item_name")
-        quantity = int(request.POST.get("item_quantity") or 0)
-        
-        data = apprisal_data(items=item_name)
-        item, _ = ProjectItem.objects.get_or_create(
-            eve_id = data["items"][0]["itemType"]["eid"],
-            defaults={
-                "name": item_name,
-                "jita_price": data["items"][0]["effectivePrices"]["sellPrice"] / 100,
-                "volume": data["items"][0]["totalVolume"]
-            }
-        )
-
-        project = Project.objects.create(
-            name = project_name,
-            description = project_description,
-            status = 0
-        )
-        
-        Product.objects.create(
-            project = project,
-            item = item,
-            quantity = quantity
-        )
-        
-        return redirect("/projects/")
-    
-    return render(request,"project/add.html",{
-        "main": main
-    })
-
 # View Project
 @login_required(login_url="/")
 def view_project(request, project_id):
+    if not request.user.groups.filter(name__in=["Admin","Industry"]).exists():
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     project = get_object_or_404(Project, id=project_id)
     list_materials = MaterialProject.objects.filter(project=project)
@@ -738,8 +707,10 @@ def view_project(request, project_id):
         "materials_id": materials_id,
         "economic_id": economic_id
     })
-    
-# List Porjects Admin
+
+## Admin View
+
+### List Porjects Admin
 @login_required(login_url="/")
 def admin_projects(request):
     if not request.user.groups.filter(name="Admin").exists():
@@ -753,9 +724,140 @@ def admin_projects(request):
         "list_projects": list_projects
     })
 
-# Add Material to Project
+
+### Add Project
+@login_required(login_url="/")
+def add_project(request):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    
+    if request.method == "POST":
+        project_name = request.POST.get("project_name")
+        project_description = request.POST.get("project_description")
+        item_name = request.POST.get("item_name")
+        quantity = int(request.POST.get("item_quantity") or 0)
+        
+        data = apprisal_data(items=item_name)
+        item, _ = ProjectItem.objects.get_or_create(
+            eve_id = data["items"][0]["itemType"]["eid"],
+            defaults={
+                "name": item_name,
+                "jita_price": data["items"][0]["effectivePrices"]["sellPrice"] / 100,
+                "volume": data["items"][0]["totalVolume"]
+            }
+        )
+
+        project = Project.objects.create(
+            name = project_name,
+            description = project_description,
+            status = 0
+        )
+        
+        Product.objects.create(
+            project = project,
+            item = item,
+            quantity = quantity
+        )
+        
+        return redirect("/projects/")
+    
+    return render(request,"project/admin/add.html",{
+        "main": main
+    })
+
+### Edit Project
+@login_required(login_url="/")
+def edit_project(request, project_id):
+    if not request.user.groups.filter(name__in=["Admin","Industry"]).exists():
+        return redirect("/dashboard/")
+    
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    project = get_object_or_404(Project, id=project_id)
+    product = Product.objects.get(project = project)
+    
+    if request.method == "POST":
+        project_name = request.POST.get("project_name")
+        project_description = request.POST.get("project_description")
+        item_name = request.POST.get("item_name")
+        quantity = int(request.POST.get("item_quantity") or 0)
+        
+        project.name = project_name
+        project.description = project_description
+        project.save()
+        
+        if product.item.name != item_name:
+            item_data = apprisal_data(item_name)
+            
+            item, created = ProjectItem.objects.get_or_create(
+                eve_id = item_data["items"][0]["itemType"]["eid"],
+                defaults={
+                    "name": item_name,
+                    "jita_price": item_data["items"][0]["effectivePrices"]["sellPrice"] / 100,
+                    "volume": item_data["items"][0]["totalVolume"]
+                }
+            )
+
+            if not created:
+                item.jita_price = item_data["items"][0]["effectivePrices"]["sellPrice"] / 100
+                item.volume = item_data["items"][0]["totalVolume"]
+                item.save()
+                
+            product.item = item
+            
+        product.quantity = quantity
+        product.save()
+        
+        return redirect(f"/projects/{project_id}/view")
+
+    
+    return render(request,"project/admin/add.html",{
+        "main": main,
+        "project": project,
+        "product" : product
+    })
+    
+### Delete Project
+@login_required(login_url="/")
+def del_project(request, project_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+
+    try:
+        project = get_object_or_404(Project, id=project_id)
+        list_materials = MaterialProject.objects.filter(project=project)
+        list_contracts = Contract.objects.filter(project=project)
+        product = Product.objects.get(project = project)
+        product.delete()
+        list_contracts.delete()
+        list_materials.delete()
+        project.delete()
+    except Project.DoesNotExist:
+        pass
+    
+    return redirect("/projects/")
+
+### Finish Project
+@login_required(login_url="/")
+def finish_project(request, project_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
+    project = Project.objects.get(id = project_id)
+    project.status = 1
+    project.save()
+    
+    return redirect(f"/projects/{project_id}/view/")
+     
+### MATERIALS
+
+#### Add new list of materials
 @login_required(login_url="/")
 def add_material_project(request, project_id):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+    
     main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
     project = get_object_or_404(Project, id=project_id)
     
@@ -788,7 +890,7 @@ def add_material_project(request, project_id):
         "project": project
     })
     
-# Edit Material in Project
+#### Edit Material in Project
 @login_required(login_url="/")
 def edit_material_project(request, project_id, material_id):
     if not request.user.groups.filter(name="Admin").exists():
@@ -811,7 +913,7 @@ def edit_material_project(request, project_id, material_id):
         "material": material
     })
     
-# Remove Material from Project
+#### Remove Material from Project
 @login_required(login_url="/")
 def del_material_project(request, project_id, material_id):
     if not request.user.groups.filter(name="Admin").exists():

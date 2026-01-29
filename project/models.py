@@ -3,7 +3,6 @@ from django.db import models
 class Project(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
-    contract_id = models.CharField(max_length=200, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.PositiveBigIntegerField(default=0)
 

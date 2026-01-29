@@ -16,15 +16,15 @@
 <ul class="nav navbar-nav sub-nav">
     {% if request.user|has_group:"Admin" %}
     <li class="nav-item py ms-2">
-        <a href="/projects/{{project.id}}/finish/" class="nav-link-py-0 {% if project.status != 0 %}disabled{% endif %}">
-            <span class="btn btn-info text-dark">Finish Project</span>
+        <a href="/projects/{{project.id}}/finish/" class="nav-link-py-0">
+            <button class="btn btn-info text-dark" {% if project.status != 0 %} disabled {% endif %}>Finish Project</button>
         </a>
     </li>
     <li class="nav-item py ms-2">
-        <a href="/projects/{{project.id}}/edit/" class="nav-link-py-0 {% if project.status != 0 %}disabled{% endif %}">
-            <span class="btn btn-warning text-dark">
+        <a href="/projects/{{project.id}}/edit/" class="nav-link-py-0">
+            <button class="btn btn-warning text-dark">
                 <i class="bi bi-pencil"></i>
-            </span>
+            </button>
         </a>
     </li>
     <li class="nav-item py ms-2">

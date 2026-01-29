@@ -33,7 +33,7 @@ Projects
 <div class="my-3">
     <div class="container-fluid m-0 p-0">
         <div class="d-flex flex-wrap justify-content-start align-items-start">
-            <div class="container-fluid m-0 p-0 col-12 col-md-6">
+            <div class="container-fluid m-0 p-0 col-12 col-lg-6">
                 <div class="card col-12">
                     <div class="card-header">
                         <h5 class="text-center m-0">Active Projects</h5>
@@ -55,7 +55,7 @@ Projects
                                                 class="rounded">
                                             <div class="container">
                                                 <h6 class="p-0 m-0">Description</h6>
-                                                <p class="card-text text-muted">{{project.description}}</p>
+                                                <p class="card-text text-muted">{{project.description|slice:"24"}}...</p>
                                             </div>
                                             <div class="container">
                                                 <h6 class="m-0 p-0">Objective</h6>
@@ -75,11 +75,10 @@ Projects
                         </div>
                         {% endif %}
                         {% endfor %}
-
                     </div>
                 </div>
             </div>
-            <div class="container-fluid m-0 p-0 col-12 col-md-6">
+            <div class="container-fluid m-0 p-0 col-12 col-lg-6">
                 <div class="card col-12">
                     <div class="card-header">
                         <h5 class="text-center m-0">Finished Projects</h5>
@@ -101,7 +100,7 @@ Projects
                                                 class="rounded">
                                             <div class="container">
                                                 <h6 class="p-0 m-0">Description</h6>
-                                                <p class="card-text text-muted">{{project.description}}</p>
+                                                <p class="card-text text-muted p-0 m-0">{{project.description|slice:"24"}}...</p>
                                             </div>
                                             <div class="container">
                                                 <h6 class="m-0 p-0">Objective</h6>
@@ -121,7 +120,6 @@ Projects
                         </div>
                         {% endif %}
                         {% endfor %}
-
                     </div>
                 </div>
             </div>

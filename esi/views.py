@@ -202,7 +202,6 @@ def contract_project_status():
         project = Project.objects.filter(id=project_id).first()
         if not project:
             continue
-        print(contract["status"])
         match contract["status"]:
             case "outstanding":
                 status = 1
@@ -214,8 +213,7 @@ def contract_project_status():
                 status = 4
             case _:
                 status = 0
-        
-        print(status)
+
         project = Project.objects.get(id=project_id)
         contractBBDD, created = Contract.objects.get_or_create(
             project = project,

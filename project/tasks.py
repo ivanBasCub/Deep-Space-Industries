@@ -1,7 +1,7 @@
 from celery import shared_task
-from .models import MaterialProject
+from .models import MaterialProject, Item
 from buyback.models import Manager
-from esi.views import corp_assets, contract_project_status
+from esi.views import corp_assets, contract_project_status, apprisal_data
 
 @shared_task
 def update_materials():
@@ -24,3 +24,19 @@ def update_materials():
 @shared_task
 def update_project_contracts():
     contract_project_status()
+    
+@shared_task
+def update_item_price():
+    list_items = Item.objects.all()
+    
+    items = ""
+    for item in list_items:
+        items += item.name +"\n"
+        
+    app_data = apprisal_data(items=items)
+    
+    for data in app_data["items"]:
+        item = Item.objects.get(name = data["itemType"]["name"])
+        item.jita_price = data["effectivePrices"]["sellPrice"] / 100
+        item.volume = data["totalVolume"]
+        item.save()

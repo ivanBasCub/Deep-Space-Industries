@@ -40,23 +40,27 @@ Add Materials
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="project_name">Project Name</label>
-                    <input type="text" name="project_name" id="project_name" class="form-control">
+                    <input type="text" name="project_name" id="project_name" class="form-control" {% if project %} value="{{project.name}}" {% endif %}>
                 </div>
                 <div class="form-group">
                     <label for="project_description">Project Description</label>
-                    <textarea name="project_description" id="project_description" class="form-control" rows="3" style="resize: none;"></textarea>
+                    <textarea name="project_description" id="project_description" class="form-control" rows="3" style="resize: none;" >{% if project %} {{project.description}} {% endif %}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="item_name">Item Name</label>
-                    <input type="text" name="item_name" id="item_name" class="form-control">
+                    <input type="text" name="item_name" id="item_name" class="form-control" {% if project %} value="{{product.item.name}}" {% endif %} >
                     <small class="form-text text-muted">Exact name as in the game.</small>
                 </div>
                 <div class="form-group">
                     <label for="item_quantity">Item Quantity</label>
-                    <input type="number" name="item_quantity" id="item_quantity" class="form-control" min="1">
+                    <input type="number" name="item_quantity" id="item_quantity" class="form-control" min="1" {% if project %} value="{{product.quantity}}" {% endif %}>
                 </div>
                 <button type="submit" class="btn btn-primary mt-3 w-100">
-                    Create Project
+                    {% if product %}
+                        Update Project
+                    {% else %}
+                        Create Project
+                    {% endif %}
                 </button>
             </form>
         </div>
