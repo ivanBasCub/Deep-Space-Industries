@@ -37,6 +37,6 @@ def update_item_price():
     
     for data in app_data["items"]:
         item = Item.objects.get(name = data["itemType"]["name"])
-        item.jita_price = data["effectivePrices"]["sellPrice"] / 100
+        item.jita_price = data["effectivePrices"]["buyPrice"] / 100
         item.volume = data["totalVolume"]
         item.save()

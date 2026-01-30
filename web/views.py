@@ -196,7 +196,6 @@ def program_calculator(request, program_id):
 ### Add buyback program
 @login_required(login_url="/")
 def add_buyback_program(request):
-    print(request.user.groups.all())
     if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
     
@@ -689,7 +688,6 @@ def view_project(request, project_id):
     total_cost = 0
     for material in list_materials:
         material_total_cost += material.total_price_needed()
-        print(material.obtained)
         
     for contract in list_contracts:
         if contract.status in [1, 2]:
@@ -794,13 +792,13 @@ def edit_project(request, project_id):
                 eve_id = item_data["items"][0]["itemType"]["eid"],
                 defaults={
                     "name": item_name,
-                    "jita_price": item_data["items"][0]["effectivePrices"]["sellPrice"] / 100,
+                    "jita_price": item_data["items"][0]["effectivePrices"]["buyPrice"] / 100,
                     "volume": item_data["items"][0]["totalVolume"]
                 }
             )
 
             if not created:
-                item.jita_price = item_data["items"][0]["effectivePrices"]["sellPrice"] / 100
+                item.jita_price = item_data["items"][0]["effectivePrices"]["buyPrice"] / 100
                 item.volume = item_data["items"][0]["totalVolume"]
                 item.save()
                 
@@ -866,14 +864,18 @@ def add_material_project(request, project_id):
         data = apprisal_data(items=materials)
         
         for item in data["items"]:
-            pItem, _ = ProjectItem.objects.get_or_create(
+            pItem, created = ProjectItem.objects.get_or_create(
                 eve_id = item["itemType"]["eid"],
                 defaults={
                     "name": item["itemType"]["name"],
-                    "jita_price": item["effectivePrices"]["sellPrice"] / 100,
+                    "jita_price": item["effectivePrices"]["buyPrice"] / 100,
                     "volume": item["totalVolume"]
                 }
             )
+            
+            if not created:
+                pItem.jita_price = item["effectivePrices"]["buyPrice"] / 100
+                pItem.save()
             
             MaterialProject.objects.get_or_create(
                 project = project,
