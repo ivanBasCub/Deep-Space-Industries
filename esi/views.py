@@ -196,8 +196,11 @@ def contract_project_status():
         data = contract["title"].split("-")
         if len(data) != 4:
             continue
-        project_id = int(data[1])
-        contract_type = int(data[2])
+        try:
+            project_id = int(data[1])
+            contract_type = int(data[2])
+        except ValueError:
+            continue
         status = 0
         project = Project.objects.filter(id=project_id).first()
         if not project:
