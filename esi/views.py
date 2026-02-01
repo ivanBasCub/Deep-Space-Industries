@@ -120,10 +120,10 @@ def update_order_data(order):
         "Authorization": f"Bearer {manager.access_token}"
     }
     
-    url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_name}/contracts/"
+    url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_id}/contracts/"
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        return 1
+        return response.status_code
     
     contracts = response.json()
 
