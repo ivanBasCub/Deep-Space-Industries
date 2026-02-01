@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+    <title>Dashboard - Deep Core Industry</title>
+{% endblock %}
+
+{% block title %}
+Admin User
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="card col-12 col-md-8 mx-auto">
+        <div class="card-header">Manage User Permissions</div>
+        <table class="table footer w-100 m-0" id="userTable">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Permissions</th>
+                    <th>Actions</th>
+                </tr>
+                <tr>
+                    <th>
+                        <input type="text" id="inputSearch" class="form-control">
+                    </th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in list_user %}
+                <tr>
+                    <td>{{user.username}}</td>
+                    <td>
+                        {% if user.user_groups.count != 0 %}
+                            {{ user.user_groups|join:", " }}
+                        {% else %}
+                            This user not have permissions
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/users/{{user.id}}/edit/permissions/" class="btn btn-sm btn-warning" title="Edit the permissions for the user {{user.username}}">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="{% static 'js/list_users.js' %}"></script>
+{% endblock %}

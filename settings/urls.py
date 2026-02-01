@@ -65,4 +65,7 @@ urlpatterns = [
     path('projects/<int:project_id>/material/add/', web_views.add_material_project, name="add_material_to_project"),
     path('projects/<int:project_id>/material/<int:material_id>/edit/', web_views.edit_material_project, name="edit_material_of_project"),
     path('projects/<int:project_id>/material/<int:material_id>/del/', web_views.del_material_project, name="del_material_of_project"),
+    # Admin Users
+    path('users/', web_views.list_users, name="user_list"),
+    path('users/<int:user_id>/edit/permissions/', web_views.edit_user_permissions, name="user_permissions")
 ]
