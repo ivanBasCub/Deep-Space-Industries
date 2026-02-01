@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-&h8i3wwt!%jh*z78z03-!)9d^2d=f3*qk6r=o+1&!c*d@1&pv1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -99,6 +99,11 @@ DATABASES = {
         'PORT': os.getenv('DATABASE_PORT')
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://deepcoreindustry.shop',
+    'https://www.deepcoreindustry.shop'
+]
 
 
 # Password validation

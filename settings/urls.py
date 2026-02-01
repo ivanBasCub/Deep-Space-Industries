@@ -16,11 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
 import web.views as web_views
 import sso.views as sso_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', web_views.index, name='index'),
     path('dashboard/', web_views.dashboard, name='dashboard'),
     # SSO URLs
@@ -69,3 +69,8 @@ urlpatterns = [
     path('users/', web_views.list_users, name="user_list"),
     path('users/<int:user_id>/edit/permissions/', web_views.edit_user_permissions, name="user_permissions")
 ]
+
+if settings.DEBUG:
+    urlpatterns += [
+            path('admin/', admin.site.urls),
+    ]
