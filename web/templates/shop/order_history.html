@@ -78,6 +78,9 @@ Shop Orders
                     <th>Status</th>
                     <th>Items</th>
                     <th>Total Price</th>
+                    {% if request.user|has_group:"Admin" %}
+                        <th>Actions</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -121,6 +124,19 @@ Shop Orders
                         </table>
                     </td>
                     <td style="vertical-align: middle;" >{{order.total_price|format_number}} ISK</td>
+                    {% if request.user|has_group:"Admin" %}
+                        <td style="vertical-align: middle;">
+                            <a href="/shop/orders/{{order.id}}/status/2/" class="btn btn-sm btn-success" title="Complete the order">
+                                <i class="bi bi-check-lg"></i>
+                            </a>
+                            <a href="/shop/orders/{{order.id}}/status/3/" class="btn btn-sm btn-warning" title="Cancel order">
+                                <i class="bi bi-x-lg"></i>
+                            </a>
+                            <a href="/shop/orders/{{order.id}}/status/4/" class="btn btn-sm btn-danger" title="Delete order">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

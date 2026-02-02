@@ -54,6 +54,7 @@ Shop Orders
                     <th>Character Name</th>
                     <th>Items</th>
                     <th>Total Price</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -86,6 +87,11 @@ Shop Orders
                         </table>
                     </td>
                     <td style="vertical-align: middle;">{{order.total_price|format_number}} ISK</td>
+                    <td style="vertical-align: middle;">
+                        <a href="/shop/orders/{{order.id}}/status/1/" class="btn btn-success" title="Update order status">
+                            <i class="bi bi-check-lg"></i>
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

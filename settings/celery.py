@@ -13,11 +13,6 @@ app.conf.beat_schedule = {
         'schedule': 600,
         'args':()
     },
-    'check_orders':{
-        'task':'shop.tasks.check_order_status',
-        'schedule': 300,
-        'args':()
-    },
     'update_materials':{
         'task':'project.tasks.update_materials',
         'schedule': 900,

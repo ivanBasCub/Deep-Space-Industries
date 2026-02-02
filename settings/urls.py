@@ -54,6 +54,7 @@ urlpatterns = [
     path('shop/items/<int:item_id>/edit/', web_views.edit_shop_items, name="edit_shop_items"),
     path('shop/items/<int:item_id>/del/',web_views.remove_item_shop, name="del_item"),
     path('cart/<int:item_id>/del/', web_views.remove_from_cart, name="del_cart_item"),
+    path('shop/orders/<int:order_id>/status/<int:status>/', web_views.update_order_status, name="update_status_orders"),
     # Projects
     path('projects/', web_views.list_projects, name="projects"),
     path('projects/admin/', web_views.admin_projects, name="admin_projects"),

@@ -651,6 +651,25 @@ def pending_orders(request):
         "list_orders": list_orders
     })
 
+# Update Status Orders
+@login_required(login_url="/")
+def update_order_status(request, order_id, status):
+    if not request.user.groups.filter(name="Admin").exists():
+        return redirect("/dashboard/")
+
+    order = Order.objects.get(id = order_id)
+    order.status = status
+    order.save()
+    
+    if order.status == 3:
+        list_items = order.order_items.all()
+        for item_order in list_items:
+            item = item_order.item
+            item.quantity += item_order.quantity
+            item.save()
+    
+    return redirect("/shop/")
+    
 # PROJECTS Feature View
 
 ## User View

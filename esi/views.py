@@ -107,50 +107,6 @@ def apprisal_data(items, program = False):
     
     return response.json()
 
-# Function to obtain the contract data from the ESI API
-def update_order_data(order):
-    manager = Manager.objects.first()
-    headers = {
-        "Accept-Language": "",
-        "If-None-Match": "",
-        "X-Compatibility-Date": "2025-12-16",
-        "X-Tenant": "",
-        "If-Modified-Since": "",
-        "Accept": "application/json",
-        "Authorization": f"Bearer {manager.access_token}"
-    }
-    
-    url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_id}/contracts/"
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        return response.status_code
-    
-    contracts = response.json()
-    print(contracts)
-    for contract in contracts:
-        if contract['title'] == order.order_id:
-            match contract["status"]:
-                case "outstanding":
-                    order.status = 1
-                case "completed":
-                    order.status = 2
-                case "cancelled":
-                    order.status = 3
-                case "deleted":
-                    order.status = 4
-                case _:
-                    order.status = 0 
-
-    order.save()
-    if order.status == 3 or order.status == 4:
-        list_items = order.order_items.all()
-        for item_order in list_items:
-            item = item_order.item
-            item.quantity += item_order.quantity
-            item.save()
-
-    return 0
-
 # Function to obtain the corporation assets
 def corp_assets(manager):
     
