@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'esi',
     'buyback',
     'shop',
-    'project'
+    'project',
+    'warehouse'
 ]
 
 MIDDLEWARE = [
