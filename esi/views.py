@@ -126,7 +126,7 @@ def update_order_data(order):
         return response.status_code
     
     contracts = response.json()
-
+    print(contracts)
     for contract in contracts:
         if contract['title'] == order.order_id:
             match contract["status"]:
