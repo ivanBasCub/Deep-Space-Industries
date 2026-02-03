@@ -81,13 +81,26 @@ def structure_data(character, structure_id):
         "Accept": "application/json",
         "Authorization": f"Bearer {character.access_token}"
     }
-    print(character.access_token)
+    
+    headers_station = {
+    "Accept-Language": "",
+    "If-None-Match": "",
+    "X-Compatibility-Date": "2025-12-16",
+    "X-Tenant": "",
+    "If-Modified-Since": "",
+    "Accept": "application/json"
+}
     
     response = requests.get(
         f"{settings.EVE_ESI_URL}/universe/structures/{structure_id}",
         headers=headers
     )
-    print(response.status_code)
+    if response.status_code != 200:
+        response = requests.get(
+            f"{settings.EVE_ESI_URL}/universe/stations/{structure_id}",
+            headers=headers_station
+        )
+
     return response.json()
 
 # Function to obtain the apprasial

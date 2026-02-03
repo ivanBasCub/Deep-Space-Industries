@@ -1,0 +1,44 @@
+.btn-Ammo{
+    background-color: #D9534F;
+    color: #fff;
+}
+.btn-Ship{
+    background-color: #0275D8;
+    color: #fff;
+}
+.btn-Module{
+    background-color: #5BC0DE;
+    color: #fff;
+}
+.btn-Mineral{
+    background-color: #5CB85C;
+    color: #fff;
+}
+.btn-Reaction{
+    background-color: #F0AD4E;
+    color: #fff;
+}
+.btn-Blueprint{
+    background-color: #337AB7;
+    color: #fff;
+}
+.btn-Structure{
+    background-color: #6F42C1;
+    color: #fff;
+}
+.btn-Decryptor{
+    background-color: #8A6D3B;
+    color: #fff;
+}
+.btn-Deployable{
+    background-color: #20C997;
+    color: #fff;
+}
+.btn-Drone{
+    background-color: #343A40;
+    color: #fff;
+}
+.btn-Implant{
+    background-color: #E83E8C;
+    color: #fff;
+}

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<link rel="stylesheet" href="{% static 'css/warehouse.css' %}">
+<title>Warehouse - Deep Core Industry</title>
+{% endblock %}
+
+{% block title %}
+Warehouse
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    {% if request.user|has_group:"Admin" %}
+    <form id="bulk-form" method="get" action="/warehouse/bulk/">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="bulk-action">
+    {% endif %}
+
+    <div class="card col-12 mx-auto">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="m-0 p-0">Corp Inventory</h5>
+
+            {% if request.user|has_group:"Admin" %}
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" onclick="submitBulk('edit_tags')">
+                    <i class="bi bi-tags"></i> Edit Tags
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <table class="table no-footer w-100 m-0">
+            <thead>
+                <tr>
+                    <th class="text-center">
+                        {% if request.user|has_group:"Admin" %}
+                        <input type="checkbox" id="select-all" class="form-check-input" title="Select all items">
+                        {% endif %}
+                    </th>
+                    <th></th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Tags</th>
+                    <th>Location</th>
+                    <th>Station</th>
+                    <th>
+                        {% if request.user|has_group:"Admin" %}
+                        Actions
+                        {% endif %}
+                    </th>
+                </tr>
+
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th><input type="text" id="filterItemName" class="form-control"></th>
+                    <th></th>
+                    <th>
+                        <select id="filtertag" class="form-select">
+                            <option value="" selected>All Items</option>
+                            {% for tag in list_tags %}
+                            <option value="{{tag.name}}">{{tag.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                    <th>
+                        <select id="filterlocation" class="form-select">
+                            <option value="" selected>All Hangars</option>
+                            {% for loc in list_location %}
+                            <option value="{{loc}}">{{loc}}</option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                    <th>
+                        <select id="filterstation" class="form-select">
+                            <option value="" selected>All Stations</option>
+                            {% for station in list_stations %}
+                            <option value="{{station}}">{{station}}</option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in list_items %}
+                <tr>
+                    <td style="vertical-align: middle;">
+                        {% if request.user|has_group:"Admin" %}
+                        <input type="checkbox" name="selected_items" value="{{ item.id }}" class="form-check-input">
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <img class="item-icon" src="https://image.eveonline.com/Type/{{item.eve_id}}_32.png">
+                    </td>
+
+                    <td style="vertical-align: middle;">{{item.name}}</td>
+                    <td style="vertical-align: middle;" class="text-center">{{item.quantity}}</td>
+
+                    <td style="vertical-align: middle;">
+                        {% if item.items.exists %}
+                            {% for link in item.items.all %}
+                                <span class="badge btn btn-sm btn-{{link.tag.name}}">{{link.tag.name}}</span>
+                            {% endfor %}
+                        {% else %}
+                        No Tags
+                        {% endif %}
+                    </td>
+
+                    <td style="vertical-align: middle;">{{item.container}}</td>
+                    <td style="vertical-align: middle;">{{item.location}}</td>
+
+                    <td style="vertical-align: middle;">
+                        {% if request.user|has_group:"Admin" %}
+                        <a href="/warehouse/{{item.id}}/del/" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if request.user|has_group:"Admin" %}
+    </form>
+    {% endif %}
+</div>
+
+<script src="{% static 'js/warehouse.js' %}"></script>
+
+<script>
+    document.getElementById("select-all")?.addEventListener("change", function () {
+        const checkboxes = document.querySelectorAll("input[name='selected_items']");
+        checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+
+    function submitBulk(action) {
+        const form = document.getElementById("bulk-form");
+        document.getElementById("bulk-action").value = action;
+
+        const selected = document.querySelectorAll("input[name='selected_items']:checked");
+        if (selected.length === 0) {
+            alert("No has seleccionado ningún item.");
+            return;
+        }
+
+        form.submit();
+    }
+</script>
+
+{% endblock %}

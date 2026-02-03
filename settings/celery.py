@@ -27,6 +27,11 @@ app.conf.beat_schedule = {
         'task':'project.tasks.update_item_price',
         'schedule': 3600,
         'args':()
+    },
+    "update_corp_asset":{
+        'task':'warehouse.tasks.update_corp_asset',
+        'schedule': 300,
+        'args':()
     }
 }
 

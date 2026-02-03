@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/shop.css' %}">
+<link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+<title>Warehouse - Deep Core Industry</title>
+{% endblock %}
+
+{% block title %}
+Warehouse
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    <div class="card col-12 col-md-4 mx-auto">
+        <div class="card-header">
+            Edit Item Tags
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <select name="tags" class="form-select" multiple size="5">
+                        {% for tag in tags %}
+                        <option value="{{tag.id}}">{{tag.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100 mt-2">
+                    Update Items Tags
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
