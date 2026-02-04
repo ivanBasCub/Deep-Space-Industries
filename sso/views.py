@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.contrib import messages
 from django.conf import settings
 from django.utils import timezone
@@ -7,7 +7,6 @@ from django.contrib.auth import login, logout
 from sso.models import CharacterEve
 from buyback.models import Manager
 import esi.views as esi_views
-
 from base64 import b64encode
 from datetime import timedelta
 import secrets
@@ -16,10 +15,11 @@ import string
 import urllib.parse
 import requests
 
-# Function to initiate EVE Online SSO login
+# Login SSO
+
+## Function to initiate EVE Online SSO login
 def eve_login(request, scope, login_type):
     state = f"{login_type}_" + ''.join(random.choices(string.ascii_uppercase + string.digits, k=16))
-    print(settings.CLIENT_ID)
     params = {
         'response_type': 'code',
         'client_id': settings.CLIENT_ID,
@@ -31,10 +31,14 @@ def eve_login(request, scope, login_type):
     url = 'https://login.eveonline.com/v2/oauth/authorize?' + urllib.parse.urlencode(params)
     return redirect(url)
 
+## Config the scope permission
+
+### User scope permissions
 def eve_login_user(request):
     scope = "publicData"
     return eve_login(request, scope, "user")
 
+### Manager scope permissions
 def eve_login_manager(request):
     if not request.user.groups.filter(name="Admin").exists():
         return redirect("/dashboard/")
@@ -84,7 +88,6 @@ def check_account(request, token, user_info):
         return update_create_account(request, token, user_info)
 
 # Function to register a new EVE Online account in an existing user session
-# TODO: Implementar las funciones de registro de nuevas cuentas EVE Online
 def register_eve_account(request, token, user_info):
     check = CharacterEve.objects.filter(character_id=user_info['CharacterID'])
     if check.exists():
@@ -189,8 +192,6 @@ def save_manager(request, token, user_info):
     man.save()
 
     return redirect("/buybackprogram/")
-
-
 
 # Function to refesh access_token
 def refresh_access_token(character):

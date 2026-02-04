@@ -18,18 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 import web.views as web_views
-import sso.views as sso_views
 
 urlpatterns = [
     path('', web_views.index, name='index'),
     path('dashboard/', web_views.dashboard, name='dashboard'),
-    # SSO URLs
-    path('sso/login/', sso_views.eve_login_user, name='eve_login'),
-    path('sso/callback/', sso_views.eve_callback, name='eve_callback'),
-    path('sso/logout/', sso_views.eve_logout, name='logout'),
+    # Feature Buyback program urls
     path('buybackprogram/', include('buyback.urls')),
-    # Manager
-    path('manager/login/', sso_views.eve_login_manager, name="manager_login"),
+    # SSO URLs
+    path('sso/',include('sso.urls')),
     # Shop
     path('shop/', web_views.shop, name="shop"),
     path('shop/order/confirm/', web_views.confirm_order, name="confirm_order"),
