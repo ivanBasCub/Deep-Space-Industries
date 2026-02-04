@@ -1,6 +1,7 @@
 from django.conf import settings
 from buyback.models import Manager
 from project.models import Project, Contract
+from .utils import esi_call
 import requests
 
 # Function to get corporation and alliance info for a character
@@ -83,23 +84,23 @@ def structure_data(character, structure_id):
     }
     
     headers_station = {
-    "Accept-Language": "",
-    "If-None-Match": "",
-    "X-Compatibility-Date": "2025-12-16",
-    "X-Tenant": "",
-    "If-Modified-Since": "",
-    "Accept": "application/json"
-}
+        "Accept-Language": "",
+        "If-None-Match": "",
+        "X-Compatibility-Date": "2025-12-16",
+        "X-Tenant": "",
+        "If-Modified-Since": "",
+        "Accept": "application/json"
+    }
+    url = ""
     
-    response = requests.get(
-        f"{settings.EVE_ESI_URL}/universe/structures/{structure_id}",
-        headers=headers
-    )
-    if response.status_code != 200:
-        response = requests.get(
-            f"{settings.EVE_ESI_URL}/universe/stations/{structure_id}",
-            headers=headers_station
-        )
+    if structure_id >= 100000000:
+        url = f"{settings.EVE_ESI_URL}/universe/structures/{structure_id}"
+        response = requests.get(url, headers=headers)
+        response = esi_call(response)
+    else:
+        url = f"{settings.EVE_ESI_URL}/universe/stations/{structure_id}"
+        response = requests.get(url, headers=headers_station)
+        response = esi_call(response)
 
     return response.json()
 

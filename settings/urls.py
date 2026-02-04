@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 import web.views as web_views
 import sso.views as sso_views
@@ -27,22 +27,9 @@ urlpatterns = [
     path('sso/login/', sso_views.eve_login_user, name='eve_login'),
     path('sso/callback/', sso_views.eve_callback, name='eve_callback'),
     path('sso/logout/', sso_views.eve_logout, name='logout'),
-    # Buyback program
-    path('buybackprogram/', web_views.buyback_program, name="index_buybackprogram"),
-    path('buybackprogram/add/', web_views.add_buyback_program, name="add_program"),
-    path('buybackprogram/<int:program_id>/edit/', web_views.edit_buyback_program, name="edit_program"),
-    path('buybackprogram/<int:program_id>/del/', web_views.del_buyback_program, name="del_program"),    
-    path('buybackprogram/<int:program_id>/calculate/', web_views.program_calculator, name="program_calculator"),
+    path('buybackprogram/', include('buyback.urls')),
     # Manager
     path('manager/login/', sso_views.eve_login_manager, name="manager_login"),
-    # Special Taxes
-    path('buybackprogram/<int:program_id>/special_taxes/', web_views.special_taxes, name="program_special_taxes"),
-    path('buybackprogram/<int:program_id>/special_taxes/add/', web_views.add_special_taxes, name="program_special_taxes"),
-    path('buybackprogram/<int:program_id>/special_taxes/<int:special_tax_id>/del/',web_views.del_special_tax, name="del_special_tax"),
-    # Locations
-    path('locations/', web_views.locations, name="locations_index"),
-    path('locations/add/', web_views.add_location, name="add_location"),
-    path('locations/<int:structure_id>/del/', web_views.del_location, name="del_location"),
     # Shop
     path('shop/', web_views.shop, name="shop"),
     path('shop/order/confirm/', web_views.confirm_order, name="confirm_order"),

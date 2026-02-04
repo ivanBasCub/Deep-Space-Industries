@@ -16,7 +16,7 @@
         <a href="" class="btn btn-primary">Setup Manager</a>
     </li>
     <li class="nav-item sub-item">
-        <a href="/locations/" class="btn btn-primary">Locations</a>
+        <a href="/buybackprogram/locations/" class="btn btn-primary">Locations</a>
     </li>
 </ul>
 {% endblock %}
@@ -27,7 +27,7 @@
             <div class="card-header">
                 Configure Locations
                 <div class="float-end">
-                    <a href="/locations/add/" class="btn btn-sm btn-primary">
+                    <a href="/buybackprogram/locations/add/" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-circle"></i>
                     </a>
                 </div>
@@ -45,7 +45,7 @@
                         <td>{{location.station_name}}</td>
                         <td class="text-center">
                         {% if location.station_name != "Anywhere" %}
-                            <a href="/locations/{{location.station_id}}/del/" class="btn-sm btn btn-danger">
+                            <a href="/buybackprogram/locations/{{location.station_id}}/del/" class="btn-sm btn btn-danger">
                                 <i class="bi bi-trash"></i>
                             </a>
                         {% endif %}
