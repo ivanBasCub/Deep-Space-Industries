@@ -6,7 +6,7 @@ from .models import Order
 def update_orders_status():
     contract_orders = corp_contracts()
     
-    if isinstance(contract_orders, (dict, list)):
+    if not isinstance(contract_orders, list):
         return "[ERROR] Formato incorrecto"
     
     list_orders = Order.objects.filter(status__in=[0,1])

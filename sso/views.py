@@ -186,7 +186,6 @@ def save_manager(request, token, user_info):
     )
 
     man = esi_views.corp_alliance_info(man)
-    man = esi_views.wallet_info(man)
     man.save()
 
     return redirect("/buybackprogram/")

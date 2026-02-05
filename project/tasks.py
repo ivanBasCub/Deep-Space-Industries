@@ -25,8 +25,8 @@ def update_materials():
 @shared_task
 def update_project_contracts():
     contrats = corp_contracts()
-    
-    if isinstance(contrats, (dict, list)):
+    print(contrats)
+    if not isinstance(contrats, list):
         return "[ERROR] Formato incorrecto"
     
     for contract in contrats:
