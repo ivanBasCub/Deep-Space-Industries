@@ -7,7 +7,7 @@ from buyback.models import Manager
 def update_corp_asset():
     manager = Manager.objects.first()
     loc_flag_filter = ["CorpSAG1","CorpSAG2","CorpSAG3","CorpSAG4","CorpSAG5","CorpSAG6"]
-    containers_id = [16041,11490,33003,24445,16043,11489,56362,33005,11488,17365,33007,16045,3465,3296,27803,17364,33009,3466,16042,3293,2263,17363,33011,16044,3467,3297,28868,17366,17367,17368]
+    containers_id = [3296,3293,3297,17366,17367,17368,17365,17364,17363,33003,24445,33005]
     loc_filter = ["station","item"]
     data = corp_assets(manager)
 
@@ -16,9 +16,7 @@ def update_corp_asset():
         seen_ids = set()
         
         for item in data:
-            if (
-                item["location_type"] == "station" and item["type_id"] in containers_id and item["item_id"] not in seen_ids
-            ):
+            if (item["location_type"] == "station" and item["type_id"] in containers_id and item["item_id"] not in seen_ids):
                 print("[INFO] Contenedor encontrado")
                 station_items.append({
                     "item_id": item["item_id"], 
@@ -26,9 +24,6 @@ def update_corp_asset():
                     "location_id": item["location_id"]
                 })
                 seen_ids.add(item["item_id"])
-        
-        print("[INFO] Lista de contenedores")
-        print(station_items)
         
         for item in data:
             if item["location_type"] in loc_filter and item["type_id"] not in containers_id:
