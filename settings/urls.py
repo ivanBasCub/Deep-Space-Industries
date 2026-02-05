@@ -22,23 +22,16 @@ import web.views as web_views
 urlpatterns = [
     path('', web_views.index, name='index'),
     path('dashboard/', web_views.dashboard, name='dashboard'),
-    # Feature Buyback program urls
-    path('buybackprogram/', include('buyback.urls')),
     # SSO urls
     path('sso/',include('sso.urls')),
-    # Shop urls
+    # Feature Buyback program urls
+    path('buybackprogram/', include('buyback.urls')),
+    # Feature Shop urls
     path("shop/", include('shop.urls')),
+    # Feature Project urls
+    path("projects/", include('project.urls')),
 
-    path('projects/', web_views.list_projects, name="projects"),
-    path('projects/admin/', web_views.admin_projects, name="admin_projects"),
-    path('projects/add/', web_views.add_project, name="add_project"),
-    path('projects/<int:project_id>/finish/', web_views.finish_project, name="finsih_project"),
-    path('projects/<int:project_id>/edit/', web_views.edit_project, name="edit_project"),
-    path('projects/<int:project_id>/del/', web_views.del_project, name="del_project"),
-    path('projects/<int:project_id>/view/', web_views.view_project, name="view_project"),
-    path('projects/<int:project_id>/material/add/', web_views.add_material_project, name="add_material_to_project"),
-    path('projects/<int:project_id>/material/<int:material_id>/edit/', web_views.edit_material_project, name="edit_material_of_project"),
-    path('projects/<int:project_id>/material/<int:material_id>/del/', web_views.del_material_project, name="del_material_of_project"),
+    
     # Warehouse
     path('warehouse/', web_views.warehouse, name="warehouse"),
     path('warehouse/bulk/',web_views.edit_tags_bulk, name="Edit bulk items tag"),
