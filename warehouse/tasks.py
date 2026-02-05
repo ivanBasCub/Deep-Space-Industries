@@ -17,7 +17,11 @@ def update_corp_asset():
         
         for item in data:
             print("[INFO] Item Id:", item["type_id"])
-            print("[INFO] ",item["type_id"] in containers_id)
+            print("[INFO]", type(item["type_id"]))
+            print("[INFO]",item["type_id"] in containers_id)
+            print("[INFO]", item["location_type"] == "station")
+            print("[INFO]",item["location_flag"] in loc_flag_filter)
+            print("[INFO]",item["item_id"] not in seen_ids)
             if (
                 item["location_type"] == "station"
                 and item["type_id"] in containers_id
