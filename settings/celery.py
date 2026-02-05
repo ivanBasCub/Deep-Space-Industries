@@ -29,7 +29,7 @@ app.conf.beat_schedule = {
         'args':()
     },
     'update_orders_status':{
-        'task':'shop.taks.update_orders_status',
+        'task':'shop.tasks.update_orders_status',
         'schedule': 300,
         'args':()
     },
