@@ -30,12 +30,8 @@ urlpatterns = [
     path("shop/", include('shop.urls')),
     # Feature Project urls
     path("projects/", include('project.urls')),
-
-    
-    # Warehouse
-    path('warehouse/', web_views.warehouse, name="warehouse"),
-    path('warehouse/bulk/',web_views.edit_tags_bulk, name="Edit bulk items tag"),
-    path('warehouse/<int:item_id>/del/', web_views.del_corp_item, name="Del corp item"),
+    # Feature Warehouse urls
+    path('warehouse/', include('warehouse.urls')),
     # Admin Users
     path('users/', web_views.list_users, name="user_list"),
     path('users/<int:user_id>/edit/permissions/', web_views.edit_user_permissions, name="user_permissions")
