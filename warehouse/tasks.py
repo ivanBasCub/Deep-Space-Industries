@@ -9,6 +9,7 @@ def update_corp_asset():
     loc_flag_filter = ["CorpSAG1","CorpSAG2","CorpSAG3","CorpSAG4","CorpSAG5","CorpSAG6"]
     loc_filter = "station"
     data = corp_assets(manager)
+    print(data)
     try:
         for item in data:
             

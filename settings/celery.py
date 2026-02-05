@@ -35,7 +35,7 @@ app.conf.beat_schedule = {
     },
     "update_corp_asset":{
         'task':'warehouse.tasks.update_corp_asset',
-        'schedule': 3600,
+        'schedule': 60,
         'args':()
     }
 }
