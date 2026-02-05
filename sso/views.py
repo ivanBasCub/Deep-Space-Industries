@@ -110,7 +110,6 @@ def refresh_eve_character(user, character, token):
 
     # Estas funciones sí necesitan request, así que lo pasamos desde fuera
     char = esi_views.corp_alliance_info(char)
-    char = esi_views.wallet_info(char)
 
     if user.username == character['CharacterName'].replace(' ', '_'):
         char.main_character = True
@@ -136,7 +135,6 @@ def save_eve_character(user, character, token):
         char.main_character = True
         
     char = esi_views.corp_alliance_info(char)
-    char = esi_views.wallet_info(char)
 
     char.save()
     
@@ -220,5 +218,4 @@ def refresh_access_token(character):
     character.refresh_token = tokens['refresh_token']
     character.expiration = expiration
     character = esi_views.corp_alliance_info(character)
-    character = esi_views.wallet_info(character)
     character.save()

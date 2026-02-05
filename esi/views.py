@@ -42,26 +42,6 @@ def corp_alliance_info(character):
 
     return character
 
-# Function to get wallet information for a character
-def wallet_info(character):
-    headers = {
-        "Accept-Language": "",
-        "If-None-Match": "",
-        "X-Compatibility-Date": "2020-01-01",
-        "X-Tenant": "",
-        "Accept": "application/json",
-        "Authorization": f"Bearer {character.access_token}"
-    }
-    
-    url = f'{settings.EVE_ESI_URL}/characters/{character.character_id}/wallet/'
-    
-    response = requests.get(url=url, headers=headers)
-    response = esi_call(response)
-    data_wallet = response.json()
-    character.wallet_money = data_wallet
-    
-    return character
-
 # Function obtain EvE Item Data
 def item_data_id(item_id):
     headers = {

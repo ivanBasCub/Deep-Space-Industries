@@ -15,8 +15,6 @@ class CharacterEve(models.Model):
     alliance_id = models.BigIntegerField(default=0)
     alliance_name = models.CharField(max_length=255, default='')
     
-    wallet_money = models.BigIntegerField(default=0)
-    
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='characters_eve')
     deleted = models.BooleanField(default=False)
 

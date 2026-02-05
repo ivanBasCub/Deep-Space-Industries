@@ -27,8 +27,6 @@ class Manager(models.Model):
     corp_name = models.CharField(max_length=255, default='')
     alliance_id = models.BigIntegerField(default=0)
     alliance_name = models.CharField(max_length=255, default='')
-    
-    wallet_money = models.BigIntegerField(default=0)
     deleted = models.BooleanField(default=False)
     
     def __str__(self):
