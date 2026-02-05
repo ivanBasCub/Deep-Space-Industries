@@ -24,21 +24,11 @@ urlpatterns = [
     path('dashboard/', web_views.dashboard, name='dashboard'),
     # Feature Buyback program urls
     path('buybackprogram/', include('buyback.urls')),
-    # SSO URLs
+    # SSO urls
     path('sso/',include('sso.urls')),
-    # Shop
-    path('shop/', web_views.shop, name="shop"),
-    path('shop/order/confirm/', web_views.confirm_order, name="confirm_order"),
-    path('shop/orders/', web_views.pending_orders, name="pending_orders"),
-    path('shop/orders/history/', web_views.order_history, name="order_history"),
-    path('shop/orders/history/admin/', web_views.order_history, name="order_history_admin"),
-    path('shop/items/', web_views.shop_items, name="shop_items"),
-    path('shop/items/add/', web_views.add_shop_items, name="add_shop_items"),
-    path('shop/items/<int:item_id>/edit/', web_views.edit_shop_items, name="edit_shop_items"),
-    path('shop/items/<int:item_id>/del/',web_views.remove_item_shop, name="del_item"),
-    path('cart/<int:item_id>/del/', web_views.remove_from_cart, name="del_cart_item"),
-    path('shop/orders/<int:order_id>/status/<int:status>/', web_views.update_order_status, name="update_status_orders"),
-    # Projects
+    # Shop urls
+    path("shop/", include('shop.urls')),
+
     path('projects/', web_views.list_projects, name="projects"),
     path('projects/admin/', web_views.admin_projects, name="admin_projects"),
     path('projects/add/', web_views.add_project, name="add_project"),
