@@ -28,9 +28,14 @@ app.conf.beat_schedule = {
         'schedule': 3600,
         'args':()
     },
+    'update_orders_status':{
+        'task':'shop.taks.update_orders_status',
+        'schedule': 300,
+        'args':()
+    },
     "update_corp_asset":{
         'task':'warehouse.tasks.update_corp_asset',
-        'schedule': 300,
+        'schedule': 3600,
         'args':()
     }
 }

@@ -1,7 +1,6 @@
 from django.conf import settings
 from buyback.models import Manager
-from project.models import Project, Contract
-from .utils import esi_call
+from .utils import esi_call, update_pages, handler
 import requests
 
 # Function to get corporation and alliance info for a character
@@ -14,14 +13,16 @@ def corp_alliance_info(character):
         "Accept": "application/json"
     }
 
-    response_char = requests.get(f'{settings.EVE_ESI_URL}/characters/{character.character_id}/', headers=headers)
-    if response_char.status_code != 200:
-        return character
-    data_char = response_char.json()
+    url_char = f'{settings.EVE_ESI_URL}/characters/{character.character_id}/'
+    response = requests.get(url=url_char, headers=headers)
+    response = esi_call(response)
+    data_char = response.json()
     
     if 'corporation_id' in data_char:
-        response_corp = requests.get(f'{settings.EVE_ESI_URL}/corporations/{data_char["corporation_id"]}/', headers=headers)
-        data_corp = response_corp.json()
+        url_corp = f'{settings.EVE_ESI_URL}/corporations/{data_char["corporation_id"]}/'
+        response = requests.get(url=url_corp, headers=headers)
+        response = esi_call(response)
+        data_corp = response.json()
         character.corp_id = data_char['corporation_id']
         character.corp_name = data_corp['name']
     else:
@@ -29,8 +30,10 @@ def corp_alliance_info(character):
         character.corp_name = ''
         
     if 'alliance_id' in data_char:
-        response_alliance = requests.get(f'{settings.EVE_ESI_URL}/alliances/{data_char["alliance_id"]}/', headers=headers)
-        data_alliance = response_alliance.json()
+        url_alliance =  f'{settings.EVE_ESI_URL}/alliances/{data_char["alliance_id"]}/'
+        response = requests.get(url=url_alliance, headers=headers)
+        response = esi_call(response)
+        data_alliance = response.json()
         character.alliance_id = data_char['alliance_id']
         character.alliance_name = data_alliance['name']
     else:
@@ -50,10 +53,11 @@ def wallet_info(character):
         "Authorization": f"Bearer {character.access_token}"
     }
     
-    response_wallet = requests.get(f'{settings.EVE_ESI_URL}/characters/{character.character_id}/wallet/', headers=headers)
-    if response_wallet.status_code != 200:
-        return character
-    data_wallet = response_wallet.json()
+    url = f'{settings.EVE_ESI_URL}/characters/{character.character_id}/wallet/'
+    
+    response = requests.get(url=url, headers=headers)
+    response = esi_call(response)
+    data_wallet = response.json()
     character.wallet_money = data_wallet
     
     return character
@@ -67,8 +71,9 @@ def item_data_id(item_id):
         "X-Tenant": "",
         "Accept": "application/json"
     }
-
-    response = requests.get(f"{settings.EVE_ESI_URL}/universe/types/{item_id}", headers = headers)
+    url = f"{settings.EVE_ESI_URL}/universe/types/{item_id}"
+    response = requests.get(url=url, headers = headers)
+    response = esi_call(response)
     return response.json()
     
 # Function obtain structures data
@@ -116,6 +121,7 @@ def apprisal_data(items, program = False):
     
     url = f"{settings.JANICE_API_URL}appraisal?market=2&designation=appraisal&pricing={jita_price}&pricingVariant=immediate&persist=false&compactize=true&pricePercentage=100"
     response = requests.post(url, headers=headers, data=items)
+    response = esi_call(response)
     if response.status_code != 200:
         return {}
     
@@ -135,14 +141,23 @@ def corp_assets(manager):
     }
     
     url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_id}/assets/"
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        return []
     
-    return response.json()
+    try:
+        assets = update_pages(
+            handler=handler,
+            url=url,
+            headers=headers
+        )
+        
+        return assets
+    except requests.HTTPError as e:
+        return f"Error HTTP: {e.response.status_code}"
+    except Exception as e:
+        return f"Error inesperado: {str(e)}"
+
 
 # Function to obtain the project contract status
-def contract_project_status():
+def corp_contracts():
     manager = Manager.objects.first()
     headers = {
         "Accept-Language": "",
@@ -156,51 +171,14 @@ def contract_project_status():
     
     url = f"{settings.EVE_ESI_URL}/corporations/{manager.corp_id}/contracts/"
     
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        return f"Error: {response.status_code}"
-
-    contracts = response.json()
-    
-    for contract in contracts:
-        data = contract["title"].split("-")
-        if len(data) != 4:
-            continue
-        try:
-            project_id = int(data[1])
-            contract_type = int(data[2])
-        except ValueError:
-            continue
-        status = 0
-        project = Project.objects.filter(id=project_id).first()
-        if not project:
-            continue
-        match contract["status"]:
-            case "outstanding":
-                status = 1
-            case "finished":
-                status = 2
-            case "cancelled":
-                status = 3
-            case "deleted":
-                status = 4
-            case _:
-                status = 0
-
-        project = Project.objects.get(id=project_id)
-        contractBBDD, created = Contract.objects.get_or_create(
-            project = project,
-            contract_id = contract["title"],
-            defaults={
-                "contract_type": contract_type,
-                "status": status,
-                "value": contract["price"]
-            }
+    try:
+        contracts = update_pages(
+            handler=handler,
+            url=url,
+            headers=headers
         )
-        
-        if not created:
-            contractBBDD.status = status
-            contractBBDD.value = contract["price"]
-            contractBBDD.save()
-    
-    return 0
+        return contracts
+    except requests.HTTPError as e:
+        return f"Error HTTP: {e.response.status_code}"
+    except Exception as e:
+        return f"Error inesperado: {str(e)}"
