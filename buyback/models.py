@@ -52,3 +52,9 @@ class ProgramSpecialTax(models.Model):
     
     def __str__(self):
         return f"{self.item_name} - {self.special_tax}"
+    
+class Contract(models.Model):
+    contract_id = models.CharField(max_length=254)
+    program_id = models.ForeignKey(BuyBackProgram, on_delete=models.CASCADE, related_name="program")
+    status = models.PositiveBigIntegerField(default=0)
+    price = models.DecimalField(max_digits=20, decimal_places=2)

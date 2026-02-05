@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load filters %}
+
+{% block style %}
+    <link rel="stylesheet" href="{% static 'css/buyback.css' %}">
+    <title>Buyback Program - Deep Core Industry</title>
+{% endblock %}
+
+{% block title %}
+    Buyback Order History
+{% endblock %}
+
+{% block navbar_menu %}
+<ul class="nav navbar-nav me-auto">
+    <li class="nav-item">
+        <a href="/shop/orders/history/" class="nav-link py-0">
+            <span class="btn btn-secondary">Orders History</span>
+        </a>
+    </li>
+</ul>
+{% if request.user|has_group:"Admin" %}
+<ul class="nav navbar-nav sub-nav">
+    <li class="nav-item sub-item">
+        <a href="/sso/manager/login/" class="btn btn-primary">Setup Manager</a>
+    </li>
+    <li class="nav-item sub-item">
+        <a href="/buybackprogram/locations/" class="btn btn-primary">Locations</a>
+    </li>
+</ul>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="my-3">
+    
+</div>
+{% endblock %}
