@@ -22,12 +22,15 @@ def update_corp_asset():
                 and item["location_flag"] in loc_flag_filter
                 and item["item_id"] not in seen_ids
             ):
+                print("[INFO] Contenedor encontrado")
                 station_items.append({
                     "item_id": item["item_id"], 
                     "location_flag": item["location_flag"], 
                     "location_id": item["location_id"]
                 })
                 seen_ids.add(item["item_id"])
+        print("[INFO] Lista de contenedores")
+        print(station_items)
         
         for item in data:
             if item["location_type"] in loc_filter:
