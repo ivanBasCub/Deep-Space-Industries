@@ -24,8 +24,8 @@ def update_corp_asset():
             print("[INFO]",item["item_id"] not in seen_ids)
             if (
                 item["location_type"] == "station"
-                and item["type_id"] in containers_id
-                and item["location_flag"] in loc_flag_filter
+                and item["type_id"] in containers_id 
+                and item["location_flag"] in loc_flag_filter 
                 and item["item_id"] not in seen_ids
             ):
                 print("[INFO] Contenedor encontrado")
@@ -40,7 +40,7 @@ def update_corp_asset():
         print(station_items)
         
         for item in data:
-            if item["location_flag"] in loc_filter and item["type_id"] not in containers_id:
+            if item["location_type"] in loc_filter and item["type_id"] not in containers_id:
                 item_id = item["type_id"]
                 item_name = item_data_id(item_id)["name"]
 
