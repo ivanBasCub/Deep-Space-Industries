@@ -15,7 +15,9 @@ def update_corp_asset():
         station_items = []
         seen_ids = set()
         
-        for item in data: 
+        for item in data:
+            print("[INFO] Item Id:", item["type_id"])
+            print("[INFO] ",item["type_id"] in containers_id)
             if (
                 item["location_type"] == "station"
                 and item["type_id"] in containers_id
@@ -29,11 +31,12 @@ def update_corp_asset():
                     "location_id": item["location_id"]
                 })
                 seen_ids.add(item["item_id"])
+        
         print("[INFO] Lista de contenedores")
         print(station_items)
         
         for item in data:
-            if item["location_type"] in loc_filter:
+            if item["location_flag"] in loc_filter and item["type_id"] not in containers_id:
                 item_id = item["type_id"]
                 item_name = item_data_id(item_id)["name"]
 
