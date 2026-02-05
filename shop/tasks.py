@@ -5,6 +5,10 @@ from .models import Order
 @shared_task
 def update_orders_status():
     contract_orders = corp_contracts()
+    
+    if isinstance(contract_orders, (dict, list)):
+        return "[ERROR] Formato incorrecto"
+    
     list_orders = Order.objects.filter(status__in=[0,1])
     
     for contract in contract_orders:

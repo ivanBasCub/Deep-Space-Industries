@@ -159,6 +159,8 @@ def corp_contracts():
         )
         return contracts
     except requests.HTTPError as e:
+        print(f"[ERROR] Error HTTP: {e.response.status_code}")
         return f"Error HTTP: {e.response.status_code}"
     except Exception as e:
+        print(f"[ERROR] Error inesperado: {str(e)}")
         return f"Error inesperado: {str(e)}"
