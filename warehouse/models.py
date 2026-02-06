@@ -8,7 +8,6 @@ class CorpItem(models.Model):
     name = models.CharField(max_length=255, default="")
     quantity = models.PositiveBigIntegerField(default=0)
     loc_flag = models.CharField(max_length=255, default="")
-    location = models.TextField(default="")
     
 class CorpItem_Tag(models.Model):
     item = models.ForeignKey(CorpItem, models.CASCADE, related_name="items")

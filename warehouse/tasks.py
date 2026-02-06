@@ -7,74 +7,64 @@ from buyback.models import Manager
 def update_corp_asset():
     manager = Manager.objects.first()
 
-    loc_flag_filter = ["CorpSAG1","CorpSAG2","CorpSAG3","CorpSAG4","CorpSAG5","CorpSAG6", "Unlocked"]
-    containers_id = [3296, 3293, 3297, 17366, 17367, 17368, 17365, 17364, 17363, 33003, 24445, 33005]
-    loc_filter = {"station", "item"}
+    loc_flag_filter = ["CorpSAG1","CorpSAG2","CorpSAG3","CorpSAG4","CorpSAG5","CorpSAG6","Unlocked"]
+    containers_id = [3296, 3293, 3297, 17366, 17367, 17368, 17365, 17364, 17363, 33003, 24445, 33005,27]
 
     data = corp_assets(manager)
 
     try:
-
         items_by_id = {i["item_id"]: i for i in data}
 
-        station_items = {
-            item["item_id"]: {
-                "item_id": item["item_id"],
-                "location_flag": item["location_flag"],
-                "location_id": item["location_id"], 
-            }
-            for item in data
-            if item["location_type"] == "station"
-        }
-        print("[INFO] Stations", station_items)
-        def resolve_station(item):
+        def resolve_location(item, visited=None):
+            """
+            Sube por la cadena de items hasta encontrar un location_flag en loc_flag_filter.
+            Evita loops usando un set de items visitados.
+            """
+            if visited is None:
+                visited = set()
+
             current = item
-            while current and current.get("location_type") == "item":
-                parent_id = current["location_id"]
+            while current:
+                if current["item_id"] in visited:
+                    return None
+                visited.add(current["item_id"])
 
-                container = station_items.get(parent_id)
-                if container:
-                    return container["location_id"], container["location_flag"]
-                current = items_by_id.get(parent_id)
-            if current and current.get("location_type") in {"station", "structure"}:
-                return current["location_id"], current.get("location_flag")
-            return None, None
-        
-        for item in data:
-            if item["location_type"] in loc_filter and item["type_id"] not in containers_id and item["location_flag"] in loc_flag_filter:
-                structure_id, loc_flag = resolve_station(item)
-                if not structure_id:
-                    continue
+                if current["location_flag"] in loc_flag_filter:
+                    return current["location_flag"]
 
-                item_id = item["type_id"]
-                item_name = item_data_id(item_id)["name"]
-
-                if resolve_station(item)[1] == "station":
-                    station_name = structure_data(
-                        character=manager,
-                        structure_id=structure_id
-                    )["name"]
+                if current.get("location_type") == "item":
+                    parent = items_by_id.get(current["location_id"])
+                    if not parent:
+                        return None
+                    current = parent
                 else:
-                    station_name = structure_data(
-                        character=manager,
-                        structure_id=structure_id
-                    )["name"]
+                    return None
+            return None
 
-                if "is_blueprint_copy" in item and item["is_blueprint_copy"]:
-                    item_name += " (Copy)"
+        for item in data:
+            if item["type_id"] in containers_id:
+                continue
 
-                asset, created = CorpItem.objects.get_or_create(
-                    eve_id=item_id,
-                    name=item_name,
-                    loc_flag=loc_flag,
-                    location=station_name,
-                    defaults={"quantity": item["quantity"]}
-                )
+            loc_flag = resolve_location(item)
+            if not loc_flag:
+                continue 
 
-                if not created:
-                    asset.quantity = item["quantity"]
-                    asset.save()
+            item_id = item["type_id"]
+            item_name = item_data_id(item_id)["name"]
+            if item.get("is_blueprint_copy", False):
+                item_name += " (Copy)"
+
+            asset, created = CorpItem.objects.get_or_create(
+                eve_id=item_id,
+                name=item_name,
+                loc_flag=loc_flag,
+                location=loc_flag,
+                defaults={"quantity": item["quantity"]}
+            )
+
+            if not created:
+                asset.quantity = item["quantity"]
+                asset.save()
 
     except KeyError as e:
         print(f"[ERROR] KeyError: {e}")
-
