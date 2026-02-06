@@ -47,7 +47,6 @@ Warehouse
                     <th>Quantity</th>
                     <th>Tags</th>
                     <th>Location</th>
-                    <th>Station</th>
                     <th>
                         {% if request.user|has_group:"Admin" %}
                         Actions
@@ -73,14 +72,6 @@ Warehouse
                             <option value="" selected>All Hangars</option>
                             {% for loc in list_location %}
                             <option value="{{loc}}">{{loc}}</option>
-                            {% endfor %}
-                        </select>
-                    </th>
-                    <th>
-                        <select id="filterstation" class="form-select">
-                            <option value="" selected>All Stations</option>
-                            {% for station in list_stations %}
-                            <option value="{{station}}">{{station}}</option>
                             {% endfor %}
                         </select>
                     </th>
@@ -115,8 +106,6 @@ Warehouse
                     </td>
 
                     <td style="vertical-align: middle;">{{item.container}}</td>
-                    <td style="vertical-align: middle;">{{item.location}}</td>
-
                     <td style="vertical-align: middle;">
                         {% if request.user|has_group:"Admin" %}
                         <a href="/warehouse/{{item.id}}/del/" class="btn btn-sm btn-danger">
