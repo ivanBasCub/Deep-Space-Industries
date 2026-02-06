@@ -83,7 +83,14 @@ def update_item_price():
     app_data = apprisal_data(items=items)
     
     for data in app_data["items"]:
-        item = Item.objects.get(name = data["itemType"]["name"])
-        item.jita_price = data["effectivePrices"]["buyPrice"] / 100
-        item.volume = data["totalVolume"]
-        item.save()
+        try:
+            item_name = data["itemType"]["name"]
+            item = Item.objects.get(name__iexact=item_name)
+            item.jita_price = data["effectivePrices"]["buyPrice"] / 100
+            item.volume = data["totalVolume"]
+            item.save()# insensible a mayúsculas
+        except Item.DoesNotExist:
+            # Puedes crear el item o simplemente saltarlo
+            print(f"Item no encontrado en DB: {item_name}")
+            continue
+        
