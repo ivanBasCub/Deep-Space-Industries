@@ -1,5 +1,5 @@
 from celery import shared_task
-from esi.views import corp_assets, item_data_id, structure_data
+from esi.views import corp_assets, item_data_id
 from .models import CorpItem
 from buyback.models import Manager
 import json
@@ -20,16 +20,28 @@ def update_corp_asset():
             if item["type_id"] in containers_id and item["location_flag"] in loc_flag_filter and item["item_id"] not in seen_locations:
                 locations_info[item["item_id"]] = item["location_flag"]
                 seen_locations.add(item["item_id"])
-        print(locations_info)
-        """
+        
         for item in data:
             if item["type_id"] not in containers_id and item["location_flag"] in loc_flag_filter:
                 type_id = item["type_id"]
                 item_data = item_data_id(type_id)
                 item_name = item_data["name"]
                 location_flag = locations_info.get(item["location_id"])
-        """        
+                if  not location_flag:
+                    location_flag = item["location_flag"]
                 
-            
+                asset, created = CorpItem.objects.get_or_create(
+                    eve_id = type_id,
+                    name = item_name,
+                    loc_flag = location_flag,
+                    defaults={
+                        "quantity":item["quantity"]
+                    }
+                )
+                
+                if not created:
+                    asset.quantity = item["quantity"]
+                    asset.save()
+                
     except KeyError as e:
         print(f"[ERROR] KeyError: {e}")
