@@ -30,6 +30,9 @@ def update_corp_asset():
                 if  not location_flag:
                     location_flag = item["location_flag"]
                 
+                if "is_blueprint_copy" in item and item["is_blueprint_copy"]:
+                    item_name += "(COPY)"
+            
                 asset, created = CorpItem.objects.get_or_create(
                     eve_id = type_id,
                     name = item_name,
@@ -40,6 +43,7 @@ def update_corp_asset():
                 )
                 
                 if not created:
+                    asset.name = item_name
                     asset.quantity = item["quantity"]
                     asset.save()
                 
