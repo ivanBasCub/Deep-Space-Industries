@@ -14,10 +14,12 @@ def warehouse(request):
     list_tags = Tag.objects.all()
     list_items = CorpItem.objects.all()
     list_location = ["Hangar Corporation 1","Hangar Corporation 2","Hangar Corporation 3","Hangar Corporation 4","Hangar Corporation 5","Hangar Corporation 6"] 
-    list_stations = set()
+
     for item in list_items:
-        item.container = "Hangar Corporation " + item.loc_flag[-1]
-        list_stations.add(item.location)
+        if item.loc_flag and len(item.loc_flag) > 0:
+            item.container = "Hangar Corporation " + item.loc_flag[-1]
+        else:
+            item.container = "Desconocido"
         
     if request.method == "POST":
         ids = request.POST.getlist("selected_items")
@@ -32,8 +34,7 @@ def warehouse(request):
         "main":main,
         "list_tags": list_tags,
         "list_items": list_items,
-        "list_location": list_location,
-        "list_stations": list_stations
+        "list_location": list_location
     })
 
 # ADMIN VIEW
