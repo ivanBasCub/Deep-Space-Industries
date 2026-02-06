@@ -19,7 +19,7 @@ def update_corp_asset():
         
         for item in data:
             if (
-                item["location_type"] == "station"
+                item["location_type"] == "item"
                 and item["type_id"] in containers_id
                 and item["item_id"] not in seen_ids
                 and item["location_flag"] in loc_flag_filter
