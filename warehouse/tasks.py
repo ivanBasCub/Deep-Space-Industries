@@ -25,10 +25,8 @@ def update_corp_asset():
             }
             for item in data
             if item["location_type"] == "station"
-            and item["type_id"] in containers_id
-            and item["location_flag"] in loc_flag_filter
         }
-
+        print("[INFO] Stations", station_items)
         def resolve_station(item):
             current = item
             while current and current.get("location_type") == "item":
@@ -44,7 +42,6 @@ def update_corp_asset():
         
         for item in data:
             if item["location_type"] in loc_filter and item["type_id"] not in containers_id and item["location_flag"] in loc_flag_filter:
-
                 structure_id, loc_flag = resolve_station(item)
                 if not structure_id:
                     continue
