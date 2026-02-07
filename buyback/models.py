@@ -1,4 +1,5 @@
 from django.db import models
+from sso.models import CharacterEve
 
 class BuyBackServices(models.Model):
     name = models.CharField(max_length=255)
@@ -55,6 +56,7 @@ class ProgramSpecialTax(models.Model):
     
 class Contract(models.Model):
     contract_id = models.CharField(max_length=254)
-    program_id = models.ForeignKey(BuyBackProgram, on_delete=models.CASCADE, related_name="program")
+    program = models.ForeignKey(BuyBackProgram, on_delete=models.CASCADE, related_name="program")
+    character = models.ForeignKey(CharacterEve, on_delete=models.CASCADE, related_name="contracts",null=True, blank=True)
     status = models.PositiveBigIntegerField(default=0)
     price = models.DecimalField(max_digits=20, decimal_places=2)

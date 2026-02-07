@@ -11,7 +11,17 @@ Special Taxes
 {% endblock %}
 
 {% block navbar_menu %}
+<ul class="nav navbar-nav me-auto">
+    <li class="nav-item">
+        <a href="/buybackprogram/contracts/" class="nav-link py-0">
+            <span class="btn btn-secondary">Contract History</span>
+        </a>
+    </li>
+</ul>
 <ul class="nav navbar-nav sub-nav">
+    <li class="nav-item sub-item">
+        <a href="/buybackprogram/contracts/admin/" class="btn btn-primary">View Contract History</a>
+    </li>
     <li class="nav-item sub-item">
         <a href="/sso/manager/login/" class="btn btn-primary">Setup Manager</a>
     </li>

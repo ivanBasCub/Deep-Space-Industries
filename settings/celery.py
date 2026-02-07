@@ -37,6 +37,11 @@ app.conf.beat_schedule = {
         'task':'warehouse.tasks.update_corp_asset',
         'schedule': 7200,
         'args':()
+    },
+    "check_buyback_contracts":{
+        'task':'buyback.tasks.check_buyback_contracts',
+        'schedule': 300,
+        'args':()
     }
 }
 

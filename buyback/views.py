@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import BuyBackProgram, ProgramSpecialTax, Manager, Location, BuyBackServices
+from .models import BuyBackProgram, ProgramSpecialTax, Manager, Location, BuyBackServices, Contract
 from esi.views import apprisal_data, structure_data
 from sso.models import CharacterEve
 import string
@@ -168,6 +168,30 @@ def program_calculator(request, program_id):
     return render(request,"buyback/calculate.html",{
         "main":main,
         "program": program
+    })
+
+## CONTRACT LIST OF THE USER
+@login_required(login_url="/")
+def contract_history(request):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_characters = CharacterEve.objects.filter(user=request.user).all()
+    list_contracts = Contract.objects.filter(character__in = list_characters)
+    
+    total_value = 0
+    pending_contracts = 0
+    pending_contracts_value = 0
+    for contract in list_contracts:
+        total_value += contract.price
+        if contract.status in [0,1]:
+            pending_contracts += 1
+            pending_contracts_value += contract.price
+            
+    return render(request,"buyback/contract_history.html",{
+        "main": main,
+        "list_contracts": list_contracts,
+        "total_value": total_value,
+        "pending_contracts": pending_contracts,
+        "pending_contracts_value": pending_contracts_value
     })
 
 # ADMIN VIEW
@@ -390,3 +414,26 @@ def del_location(request, structure_id):
         pass
     
     return redirect("/locations/")
+
+## CONTRACT LIST 
+@login_required(login_url="/")
+def admin_contract_history(request):
+    main = CharacterEve.objects.filter(user=request.user, main_character=True).first()
+    list_contracts = Contract.objects.all()
+    
+    total_value = 0
+    pending_contracts = 0
+    pending_contracts_value = 0
+    for contract in list_contracts:
+        total_value += contract.price
+        if contract.status in [0,1]:
+            pending_contracts += 1
+            pending_contracts_value += contract.price
+            
+    return render(request,"buyback/contract_history.html",{
+        "main": main,
+        "list_contracts": list_contracts,
+        "total_value": total_value,
+        "pending_contracts": pending_contracts,
+        "pending_contracts_value": pending_contracts_value
+    })
